@@ -10,11 +10,11 @@ const UserSchema = new Schema({
   last_name: {
     type: String, required: true, minLength: 2, maxLength: 16,
   },
-  user_name: {
+  username: {
     type: String, required: true, minLength: 8, maxLength: 32,
   },
-  password: { // ! add encryption
-    type: String, required: true, minLength: 8, maxLength: 32,
+  password: {
+    type: String, required: true,
   },
   member_status: { // * Make false by default when posting new users.
     type: Boolean, required: true,
