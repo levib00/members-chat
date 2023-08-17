@@ -3,3 +3,19 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
+
+  if messages
+    ul
+      for message in messages
+        li
+          div
+            h2!= message.title 
+            p!= message.content
+            div
+              if message.user  
+                span
+                  p!= message.user  
+              if message.user  
+                span
+                  p!= message.timestamp
+                 
