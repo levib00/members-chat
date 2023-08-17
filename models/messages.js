@@ -1,4 +1,5 @@
 // eslint-disable-next-line import/no-unresolved
+const { Timestamp } = require('mongodb');
 const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
@@ -12,6 +13,9 @@ const MessageSchema = new Schema({
   },
   user: {
     type: Schema.ObjectId, ref: 'manufacturer', required: true,
+  },
+  timestamp: {
+    type: Timestamp, required: true,
   },
 });
 
