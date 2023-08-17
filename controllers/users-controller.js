@@ -26,19 +26,6 @@ passport.use(
   }),
 );
 
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (err) {
-    done(err);
-  }
-});
-
 // Display snack create form on GET.
 exports.userCreateGet = asyncHandler(async (req, res, next) => {
   // Get all manufacturers and categories, which we can use for adding to our snack.
@@ -119,3 +106,18 @@ exports.userCreatePost = [
     });
   }),
 ];
+
+exports.userLogInGet = asyncHandler(async (req, res, next) => {
+  // Get all manufacturers and categories, which we can use for adding to our snack.
+
+  res.render('log-in', {
+    title: 'Log-in to chat!',
+  });
+});
+
+exports.userLogInPost = asyncHandler(async (req, res, next) => {
+  passport.authenticate('local', {
+    successRedirect: '/',
+    failureRedirect: '/users/log-in',
+  });
+});
