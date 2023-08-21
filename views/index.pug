@@ -1,21 +1,45 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+  if !user
+    a(href='/users/log-in') log-in
+    a(href='/users/sign-up') sign up
+  h2= title
+  p Welcome to #{title} : 
+  if user 
+    a #{user.username}
+
+  if user 
+    div
+      a(href='/messages/new') Create a new message 
+
+  if user
+    if !user.member_status
+      div 
+        a(href='users/become-member') become a member!
+    if !user.isAdmin 
+      div
+        a(href='users/become-admin') become an admin!
 
   if messages
     ul
       for message in messages
         li
           div
-            h2!= message.title 
+            h3!= message.title 
             p!= message.content
             div
-              if message.user  
-                span
-                  p!= message.user  
-              if message.user  
-                span
-                  p!= message.timestamp
-                 
+              if user
+                if user.member_status === true
+                  span
+                    p!= message.username.username
+                  span
+                    p!= message.timestamp  
+          if user
+            if user.isAdmin === true 
+              form(method='POST' action='/messages/delete')
+                div.form-group
+                  input#id.form-control(type='hidden',name='id', required='true', value=message._id )
+
+                button.btn.btn-primary(type='submit') Delete
+  a(href='/messages/new')
