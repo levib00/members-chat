@@ -1,7 +1,7 @@
 extends layout
 
 block content
-  h1= title
+  h2= title
 
   form(method='POST' action='')
     div.form-group
@@ -9,7 +9,8 @@ block content
       input#title.form-control(type='text', placeholder='Title' name='title' required='true' value=(undefined===message ? '' : message.message) )
     div.form-group
       label(for='message') Message:
-      input#message.form-control(type='text', placeholder='Type your message here!' name='message' required='true' value=(undefined===message ? '' : message.message) )
+      input#message.form-control(type='textbox', placeholder='Type your message here!' name='content' required='true' value=(undefined===message ? '' : message.message) )
+    button.btn.btn-primary(type='submit') Submit
 
   if errors
     ul
