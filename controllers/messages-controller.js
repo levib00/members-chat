@@ -1,15 +1,12 @@
-/* eslint-disable import/no-unresolved */
-/* eslint-disable no-unused-vars */
 const asyncHandler = require('express-async-handler');
 const { body, validationResult } = require('express-validator');
 const Message = require('../models/messages');
-const { findByIdAndDelete } = require('../models/passphrase');
 
-// Display snack create form on GET.
 exports.messagesGet = asyncHandler(async (req, res, next) => {
+  // Display all messages.
   const { user } = req;
   let messages;
-  if (!user) {
+  if (!user) { // show different information depending on whether or not user is a member.
     messages = await Message.find()
       .populate('title')
       .populate('content')
@@ -31,14 +28,14 @@ exports.messagesGet = asyncHandler(async (req, res, next) => {
 });
 
 exports.messageCreateGet = asyncHandler(async (req, res, next) => {
-  // Get all manufacturers and categories, which we can use for adding to our snack.
+  // Get message create form.
 
   res.render('message_create', {
     title: 'Sign up',
   });
 });
 
-// Handle snack create on POST.
+// Handle message create on POST.
 exports.messageCreatePost = [
 
   // Validate and sanitize fields.
@@ -81,7 +78,6 @@ exports.messageCreatePost = [
 ];
 
 exports.messageDeletePost = asyncHandler(async (req, res, next) => {
-  console.log(req.body.id);
   await Message.findByIdAndRemove(req.body.id);
   res.redirect('/');
 });
