@@ -1,9 +1,9 @@
 extends layout
 
 block content
-  h1= title
+  h2= title
 
-  form(method='POST' action='')
+  form(method='POST' action='/users/log-in')
     div.form-group
       label(for='username') Username:
       input#username.form-control(type='text', placeholder='JohnD29' name='username' required='true' value=(undefined===user ? '' : user.username) )
@@ -14,5 +14,4 @@ block content
 
   if errors
     ul
-      for error in errors
-        li!= error.msg
+        li!= errors
