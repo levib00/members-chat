@@ -1,20 +1,16 @@
-/* eslint-disable import/no-unresolved */
-/* eslint-disable no-unused-vars */
 const asyncHandler = require('express-async-handler');
 const bcrypt = require('bcryptjs');
-// eslint-disable-next-line import/no-extraneous-dependencies
 const Admin = require('../models/admin');
 const User = require('../models/users');
 
 exports.makeAdminGet = asyncHandler(async (req, res, next) => {
-  // Get all manufacturers and categories, which we can use for adding to our snack.
-
+  // Get admin password page.
   res.render('passphrase', {
     title: 'Become a admin!',
   });
 });
 
-// Handle update member create on POST.
+// Handle update admin create on POST.
 exports.makeAdminPost = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user._id);
   const admin = await Admin.findById('64df311971803c18d7552aef');
