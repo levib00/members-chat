@@ -1,30 +1,7 @@
-/* eslint-disable import/no-unresolved */
-/* eslint-disable no-unused-vars */
 const asyncHandler = require('express-async-handler');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
-// eslint-disable-next-line import/no-extraneous-dependencies
-const LocalStrategy = require('passport-local').Strategy;
-const passport = require('passport');
 const User = require('../models/users');
-
-passport.use(
-  new LocalStrategy(async (username, password, done) => {
-    try {
-      const user = await User.findOne({ username });
-      const match = await bcrypt.compare(password, user.password);
-      if (!user) {
-        return done(null, false, { message: 'Incorrect username' });
-      }
-      if (!match) {
-        return done(null, false, { message: 'Incorrect password' });
-      }
-      return done(null, user);
-    } catch (err) {
-      return done(err);
-    }
-  }),
-);
 
 // Display snack create form on GET.
 exports.userCreateGet = asyncHandler(async (req, res, next) => {
@@ -109,15 +86,15 @@ exports.userCreatePost = [
 
 exports.userLogInGet = asyncHandler(async (req, res, next) => {
   // Get all manufacturers and categories, which we can use for adding to our snack.
-
-  res.render('log-in', {
-    title: 'Log-in to chat!',
-  });
-});
-
-exports.userLogInPost = asyncHandler(async (req, res, next) => {
-  passport.authenticate('local', {
-    successRedirect: '/',
-    failureRedirect: '/users/log-in',
-  });
+  if (!req.user) {
+    res.render('log-in', {
+      title: 'Log-in to chat!',
+      errors: req.session.messages
+        ? req.session.messages[Object.keys(req.session.messages)[Object.keys(req.session.messages)
+          .length - 1]]
+        : null,
+    });
+  } else {
+    res.redirect('/');
+  }
 });
