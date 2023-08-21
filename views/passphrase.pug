@@ -1,9 +1,9 @@
 extends layout
 
 block content
-  h1= title
+  h2= title
 
-  form(method='POST' action='/')
+  form(method='POST' action!= action)
     div.form-group
       label(for='passphrase') Passphrase:
       input#passphrase.form-control(type='password', placeholder='It\'s a secret!' name='passphrase' required='true' value=('') )
@@ -11,5 +11,6 @@ block content
 
   if errors
     ul
-      for error in errors
-        li!= error.msg
+      li!= errors 
+        if href 
+          a(href!= href)!= link
