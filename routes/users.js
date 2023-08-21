@@ -1,11 +1,12 @@
 const express = require('express');
 
 const router = express.Router();
+const passport = require('passport');
 const usersController = require('../controllers/users-controller');
 const passphraseController = require('../controllers/passphrase-controller');
+const adminController = require('../controllers/admin-controller');
 
 /* GET users listing. */
-// eslint-disable-next-line no-unused-vars
 router.get('/', (req, res, next) => {
   res.redirect('/');
 });
@@ -14,12 +15,21 @@ router.get('/sign-up', usersController.userCreateGet);
 
 router.post('/sign-up', usersController.userCreatePost);
 
-router.get('/create-member', passphraseController.makeMemberGet);
+router.get('/become-member', passphraseController.makeMemberGet);
 
-router.post('/create-member', passphraseController.makeMemberPost);
+router.post('/become-member', passphraseController.makeMemberPost);
 
-router.post('/log-in', usersController.userLogInGet);
+router.get('/log-in', usersController.userLogInGet);
 
-router.post('/log-in', usersController.userLogInPost);
+router.post('/log-in', passport.authenticate('local', {
+  failureRedirect: '/users/log-in',
+  failureMessage: true,
+}), (req, res) => {
+  res.redirect('/');
+});
+
+router.get('/become-admin', adminController.makeAdminGet);
+
+router.post('/become-admin', adminController.makeAdminPost);
 
 module.exports = router;
