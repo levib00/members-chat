@@ -2,47 +2,35 @@
 /* eslint-disable no-unused-vars */
 const asyncHandler = require('express-async-handler');
 const { body, validationResult } = require('express-validator');
-const bcrypt = require('bcryptjs');
-// eslint-disable-next-line import/no-extraneous-dependencies
-const LocalStrategy = require('passport-local').Strategy;
-const passport = require('passport');
-const User = require('../models/users');
 const Message = require('../models/messages');
-
-passport.use(
-  new LocalStrategy(async (username, password, done) => {
-    try {
-      const user = await User.findOne({ username });
-      const match = await bcrypt.compare(password, user.password);
-      if (!user) {
-        return done(null, false, { message: 'Incorrect username' });
-      }
-      if (!match) {
-        return done(null, false, { message: 'Incorrect password' });
-      }
-      return done(null, user);
-    } catch (err) {
-      return done(err);
-    }
-  }),
-);
+const { findByIdAndDelete } = require('../models/passphrase');
 
 // Display snack create form on GET.
 exports.messagesGet = asyncHandler(async (req, res, next) => {
-  // Get all manufacturers and categories, which we can use for adding to our snack.
+  const { user } = req;
   let messages;
-  if (req.user) {
-    messages = Message.findAll().populate('title').populate('content');
+  if (!user) {
+    messages = await Message.find()
+      .populate('title')
+      .populate('content')
+      .exec();
   } else {
-    messages = await Message.findAll();
+    messages = await Message.find()
+      .populate('title')
+      .populate('content')
+      .populate('username')
+      .populate('timestamp')
+      .exec();
   }
+
   res.render('index', {
-    title: 'Sign up',
+    title: 'Send a message.',
     messages,
+    user,
   });
 });
 
-exports.createMessagesGet = asyncHandler(async (req, res, next) => {
+exports.messageCreateGet = asyncHandler(async (req, res, next) => {
   // Get all manufacturers and categories, which we can use for adding to our snack.
 
   res.render('message_create', {
@@ -56,17 +44,13 @@ exports.messageCreatePost = [
   // Validate and sanitize fields.
   body('title', 'Title must not be empty.')
     .trim()
-    .isLength({ min: 2 })
-    .withMessage('Title must be at least 2 characters long.')
-    .isLength({ max: 16 })
-    .withMessage('Title must be less than 16 characters long.')
+    .isLength({ max: 100 })
+    .withMessage('Title must be less than 100 characters long.')
     .escape(),
   body('Message', 'Message must not be empty.')
     .trim()
-    .isLength({ min: 2 })
-    .withMessage('last name must be at least 2 characters long.')
-    .isLength({ max: 16 })
-    .withMessage('last name must be less than 16 characters long.')
+    .isLength({ max: 300 })
+    .withMessage('message must be less than 300 characters long.')
     .escape(),
 
   // Process request after validation and sanitization.
@@ -75,24 +59,23 @@ exports.messageCreatePost = [
     // Extract the validation errors from a request.
     const errors = validationResult(req);
 
-    const message = new User({
+    const message = new Message({
       title: req.body.title,
       content: req.body.content,
-      username: req.user.username,
+      username: req.user._id,
       timestamp: Date.now(),
-      member_status: false,
     });
 
     if (!errors.isEmpty()) {
-      res.render('signup_form', {
-        title: 'Sign up',
+      res.render('log-in', {
+        title: 'Log-in',
         errors: errors.array(),
         message,
       });
     } else {
       // Data from form is valid. Save message.
-      res.redirect('/');
       await message.save();
+      res.redirect('/');
     }
   }),
 ];
