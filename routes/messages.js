@@ -3,14 +3,15 @@ const express = require('express');
 const router = express.Router();
 const messagesController = require('../controllers/messages-controller');
 
-/* GET users listing. */
-// eslint-disable-next-line no-unused-vars
+// GET messageCreatePosts listing.
 router.get('/', (req, res, next) => {
   res.redirect('/');
 });
 
-router.get('/new', messagesController.userCreateGet);
+router.get('/new', messagesController.messageCreateGet);
 
-router.post('/new', messagesController.userCreatePost);
+router.post('/new', messagesController.messageCreatePost);
+
+router.post('/delete', messagesController.messageDeletePost);
 
 module.exports = router;
