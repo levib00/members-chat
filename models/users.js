@@ -16,8 +16,11 @@ const UserSchema = new Schema({
   password: {
     type: String, required: true,
   },
-  member_status: { // * Make false by default when posting new users.
+  member_status: {
     type: Boolean, required: true,
+  },
+  isAdmin: {
+    type: Boolean,
   },
 });
 
