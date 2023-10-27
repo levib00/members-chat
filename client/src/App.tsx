@@ -1,33 +1,43 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { Routes, Route, MemoryRouter } from "react-router-dom";
+import NavBar from './components/nav.js'
+import Home from "./components/home.js";
+import SignUp from "./components/sign-up.js";
 import './App.css'
+import ChatroomList from "./components/chat-list.js";
+import Chatroom from "./components/chatroom.js";
+import CreateChat from "./components/create-chat.js";
+import LogIn from "./components/log-in.js";
+import Error from "./components/error.js";
+import { useState } from "react";
+
+export interface IErrorObject {
+    status: number,
+    info: string
+};
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [error, setError] = useState<IErrorObject>({} as IErrorObject) // TODO: Might register as true idk
+  const [hasAuth, setHasAuth] = useState<boolean>(!!localStorage.getItem('jwt'))
+
+  const parseDom = (str: string) => {  // Parses special characters from html code to unicode characters.
+    const doc = new DOMParser().parseFromString(str, "text/html");
+    return doc.documentElement.textContent;
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <MemoryRouter>
+        <NavBar />
+        <Routes>
+          <Route path='/' element={<Home />} />
+          <Route path='/' element={<ChatroomList />} />
+          <Route path='/' element={<Chatroom />} />
+          <Route path='/' element={<CreateChat setError={setError} />} />
+          <Route path='/' element={<LogIn hasAuth={hasAuth} setError={setError} setHasAuth={setHasAuth} />} />
+          <Route path='/sign-up'  element={<SignUp hasAuth={hasAuth} setError={setError} setHasAuth={setHasAuth} /> } />
+          <Route path='error' element={<Error error={error} />} />
+        </Routes>
+      </MemoryRouter>
     </>
   )
 }
