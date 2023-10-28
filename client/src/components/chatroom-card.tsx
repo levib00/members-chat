@@ -1,17 +1,31 @@
-interface ChatroomCardProps {
+import React, { useState } from "react"
+import { Link } from "react-router-dom"
+
+interface chatroomInfo {
   name: string,
+  password: string,
   isPublic: boolean,
-  password: string
+  chatroomId: string
+}
+
+interface ChatroomCardProps {
+  chatroomInfo: chatroomInfo,
 };
 
 const ChatroomCard = (props: ChatroomCardProps) => {
+  const {chatroomInfo} = props
+  const {name, password, isPublic, chatroomId} = chatroomInfo
+
+
 
   return (
-    <div>
-      <div>{props.name.charAt(0)}</div>
-      <div>{props.name}</div>
-      <div>{props.isPublic ? 'public' : 'private'}</div>
-    </div>
+    <Link to='/'>
+      <div>
+        <div>{name.charAt(0)}</div>
+        <div>{name}</div>
+        <div>{isPublic ? 'public' : 'private'}</div> 
+      </div>
+    </Link>
   )
 }
 
