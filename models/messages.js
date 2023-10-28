@@ -15,6 +15,9 @@ const MessageSchema = new Schema({
   timestamp: {
     type: Date, required: true,
   },
+  roomId: {
+    type: Schema.ObjectId, ref: 'chatroom', required: true,
+  },
 });
 
 // Export model.

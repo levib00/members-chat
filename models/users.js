@@ -22,6 +22,9 @@ const UserSchema = new Schema({
   isAdmin: {
     type: Boolean,
   },
+  chatrooms: {
+    type: Schema.ObjectId, ref: 'user', required: true,
+  },
 });
 
 // Export model.
