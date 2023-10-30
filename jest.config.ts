@@ -8,7 +8,13 @@ export default {
   clearMocks: true,
   collectCoverage: true,
   coverageDirectory: "coverage",
+  modulePathIgnorePatterns: ["dist/"],
   moduleNameMapper: {
       '\\.(gif|ttf|eot|svg|png)$': '<rootDir>/test/__ mocks __/fileMock.js',
   },
+  globals: {
+    fetch: global.fetch,
+    localStorage: global.localStorage
+  },
+  setupFiles: ["jest-localstorage-mock"]
 }
