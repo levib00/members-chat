@@ -1,10 +1,11 @@
 import React, { useState } from "react"
 import { render, screen } from '@testing-library/react';
-import ChatroomCard from '../../client/src/components/chatroom-card';
+import ChatroomCard from '../../../client/src/components/chatroom-card';
 import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom'
+import '@testing-library/jest-dom'
 
-describe("Listing renders", () => {
+describe("Cards renders correct info", () => {
   const mockResponse = {
     name: 'room0',
     password: '1234',
