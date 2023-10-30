@@ -1,24 +1,34 @@
-interface MessageProps {
+import React from "react";
+
+interface MessageInfo {
   username: string,
   timeStamp: string,
   message: string
 };
 
-function Message(props: MessageProps) {
+interface MessagesProps {
+  messageInfo: MessageInfo,
+};
+
+function Message(props: MessagesProps) {
+  const {messageInfo} = props;
+  const {username, timeStamp, message} = messageInfo;
+
+  const date = new Date(timeStamp);
 
   return (
     <>
       <div>
-        {props.username}
+        {username}
       </div>
       <div>
-        {props.timeStamp}
+        {`${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`}
       </div>
       <div>
-        {props.message}
+        {message}
       </div>
     </>
   )
-}
+};
 
 export default Message
