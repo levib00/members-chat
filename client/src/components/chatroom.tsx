@@ -1,5 +1,8 @@
+import React from "react";
+import { getFetcher } from "../utility-functions/fetcher";
 import Message from "./message"
 import useSWR from "swr";
+import { randomUUID } from "crypto";
 
 interface MessageObject {
   username: string,
@@ -8,25 +11,12 @@ interface MessageObject {
 };
 
 const Chatroom = () => {
-  const fetcher = (url: string) => fetch(url, { 
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    },
-    // 'Access-Control-Allow-Origin': '*',
-    mode: 'cors'
-  })
-  .then(res => res.json())
-  .catch(function(error) {
-    console.log("error---", error)
-  });
 
-  const {data: messages, mutate, error: commentError} = useSWR(`http://localhost:8000/chatrooms`, fetcher)
+  const {data: messages,  error: commentError} = useSWR(`http://localhost:8000/chatrooms`, getFetcher)
 
   return (
       <div>
-        {messages.map((response: MessageObject) => <Message message={response.message} username={response.username} timeStamp={response.timeStamp} />)}
+        {messages ? messages.map((response: MessageObject) => <Message key={randomUUID()} messageInfo={response} />) : null}
       </div>
   )
 }
