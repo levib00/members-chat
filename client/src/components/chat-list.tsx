@@ -1,36 +1,23 @@
-import { useState } from "react"
+import React, { useState } from "react"
 import ChatroomCard from "./chatroom-card"
+import { getFetcher } from "../utility-functions/fetcher"
 import useSWR from "swr"
+import { randomUUID } from "crypto"
 
-interface ChatroomObject {
+interface chatroomInfo {
   name: string,
   password: string,
-  isPublic: boolean
-};
+  isPublic: boolean,
+  chatroomId: string
+}
 
 const ChatroomList = () => {
 
-  const fetcher = (url: string) => fetch(url, { 
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    },
-    // 'Access-Control-Allow-Origin': '*',
-    mode: 'cors'
-  })
-  .then(res => res.json())
-  .catch(function(error) {
-    console.log("error---", error)
-  });
-
-  const {data: chatrooms, mutate, error: commentError} = useSWR(`http://localhost:8000/chatrooms`, fetcher)
+  const {data: chatrooms,  error: chatroomError} = useSWR(`http://localhost:8000/chatrooms`, getFetcher)
 
   return (
     <>
-      <div>
-        {chatrooms.map((response: ChatroomObject) => <ChatroomCard name={response.name} password={response.password} isPublic={response.isPublic} />)}
-      </div>
+      {chatrooms.map((response: chatroomInfo) => <ChatroomCard key={randomUUID()} chatroomInfo={response} />)}
     </>
   )
 }
