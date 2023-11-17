@@ -1,31 +1,60 @@
 import React, { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
+import {submitPost, validateJoinChatroom} from '../utility-functions/post-fetch'
+import { IErrorObject } from "../App"
 
 interface chatroomInfo {
-  name: string,
+  roomName: string,
   password: string,
   isPublic: boolean,
-  chatroomId: string
+  _id: string
 }
 
 interface ChatroomCardProps {
   chatroomInfo: chatroomInfo,
+  setError: React.Dispatch<React.SetStateAction<IErrorObject>>,
+  hasUser: boolean,
 };
 
 const ChatroomCard = (props: ChatroomCardProps) => {
-  const {chatroomInfo} = props
-  const {name, password, isPublic, chatroomId} = chatroomInfo
+  const { chatroomInfo, setError, hasUser } = props
+  const { roomName, isPublic, _id } = chatroomInfo
 
 
+  const [passwordInput, setPasswordInput] = useState('')
+  const [validationError, setValidationError] = useState('')
+  const [isJoining, setIsJoining] = useState(false);
+
+  const navigate = useNavigate()
+
+  const clickJoin = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    if (!isJoining && !isPublic) {
+      setIsJoining(true)
+    } else if (hasUser) {
+      navigate(`/chatrooms/${_id}`)
+    } else {
+      submitPost(
+        `http://localhost:3000/users/join/${_id}`,
+        {password: passwordInput}, 
+        e,
+        validateJoinChatroom,
+        setError, 
+        setValidationError, 
+        navigate,
+        null
+      )
+    }
+  }
 
   return (
-    <Link to='/'>
-      <div>
-        <div>{name.charAt(0)}</div>
-        <div>{name}</div>
-        <div>{isPublic ? 'public' : 'private'}</div> 
-      </div>
-    </Link>
+    <div>
+      <div>{roomName.charAt(0)}</div>
+      <div>{roomName}</div>
+      <div>{isPublic ? 'public' : 'private'}</div> 
+      {isJoining ? <input type="password" onChange={(e) => setPasswordInput(e.target.value)} value={passwordInput}/> : null}
+      <button onClick={(e) => clickJoin(e)}>{hasUser ? 'Chat' : 'Join'}</button>
+      { validationError && <ul><li>{validationError}</li></ul> }
+    </div>
   )
 }
 
