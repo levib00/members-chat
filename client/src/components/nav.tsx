@@ -1,12 +1,34 @@
+import React from "react";
 import { Link } from "react-router-dom";
 
-function NavBar() {
+export interface INavProps {
+  hasAuth: boolean,
+  setHasAuth: React.Dispatch<React.SetStateAction<boolean>>,
+};
+
+function NavBar(props: INavProps) {
+  const {hasAuth, setHasAuth} = props
+
+  const signOut = () => {
+    setHasAuth(false);
+    localStorage.removeItem('jwt')
+  }
 
   return (
     <nav>
-      <Link to={'/'}><button>Home</button></Link>
-      <Link to={'/log-in'}><button>Settings</button></Link>
-      <Link to={'/sign-up'}><button>About</button></Link>
+      { !hasAuth ?
+        <>
+        <Link to={'/'}><button>Home</button></Link>
+        <Link to={'/log-in'}><button>Log in</button></Link>
+        <Link to={'/sign-up'}><button>sign up</button></Link>
+      </>
+      :
+      <>
+        <Link to={'/'}><button>Home</button></Link>
+        <Link to={'/chatrooms'}><button>Chatrooms</button></Link>
+        <button onClick={signOut}>Log Out</button>
+      </>
+      }
     </nav>
   )
 }
