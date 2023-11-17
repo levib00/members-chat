@@ -2,22 +2,30 @@ import React, { useState } from "react"
 import ChatroomCard from "./chatroom-card"
 import { getFetcher } from "../utility-functions/fetcher"
 import useSWR from "swr"
-import { randomUUID } from "crypto"
+import { v4 as uuid } from "uuid"
+import { Link } from "react-router-dom"
+import { IErrorObject } from "../App"
 
-interface chatroomInfo {
-  name: string,
+interface IChatroomInfo {
+  roomName: string,
   password: string,
   isPublic: boolean,
-  chatroomId: string
+  _id: string
 }
 
-const ChatroomList = () => {
+interface IChatroomListProps {
+  setError: React.Dispatch<React.SetStateAction<IErrorObject>>
+}
 
-  const {data: chatrooms,  error: chatroomError} = useSWR(`http://localhost:8000/chatrooms`, getFetcher)
+const ChatroomList = (props: IChatroomListProps) => {
+
+  const {data: user,  error: userError} = useSWR(`http://localhost:3000/users/user`, getFetcher)
+
+  const {data: chatrooms,  error: chatroomError} = useSWR(`http://localhost:3000/chatrooms/`, getFetcher)
 
   return (
     <>
-      {chatrooms.map((response: chatroomInfo) => <ChatroomCard key={randomUUID()} chatroomInfo={response} />)}
+      {user && chatrooms?.map((chatroom: IChatroomInfo) => <ChatroomCard key={uuid()} chatroomInfo={chatroom} setError={props.setError} hasUser={user.chatrooms.includes(chatroom._id)} />)}
     </>
   )
 }
