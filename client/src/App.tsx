@@ -1,4 +1,4 @@
-import { Routes, Route, MemoryRouter } from "react-router-dom";
+import { Routes, Route, MemoryRouter, BrowserRouter } from "react-router-dom";
 import NavBar from './components/nav.js'
 import Home from "./components/home.js";
 import SignUp from "./components/sign-up.js";
@@ -8,15 +8,15 @@ import Chatroom from "./components/chatroom.js";
 import CreateChat from "./components/create-chat.js";
 import LogIn from "./components/log-in.js";
 import Error from "./components/error.js";
-import { useState } from "react";
+import React, { useState } from "react";
 
 export interface IErrorObject {
     status: number,
     info: string
 };
 
-function App() {
-  const [error, setError] = useState<IErrorObject>({} as IErrorObject) // TODO: Might register as true idk
+const  App = () => {
+  const [error, setError] = useState<IErrorObject>({} as IErrorObject)
   const [hasAuth, setHasAuth] = useState<boolean>(!!localStorage.getItem('jwt'))
 
   const parseDom = (str: string) => {  // Parses special characters from html code to unicode characters.
@@ -26,18 +26,18 @@ function App() {
 
   return (
     <>
-      <MemoryRouter>
-        <NavBar />
+      <BrowserRouter>
+        <NavBar hasAuth={hasAuth} setHasAuth={setHasAuth} />
         <Routes>
-          <Route path='/' element={<Home />} />
-          <Route path='/' element={<ChatroomList />} />
-          <Route path='/' element={<Chatroom />} />
-          <Route path='/' element={<CreateChat setError={setError} />} />
-          <Route path='/' element={<LogIn hasAuth={hasAuth} setError={setError} setHasAuth={setHasAuth} />} />
+          <Route path='/' element={<Home hasAuth={hasAuth} />} />
+          <Route path='/chatrooms' element={<ChatroomList setError={setError} />} />
+          <Route path='/chatrooms/:chatroomId' element={<Chatroom setError={setError} />} />
+          <Route path='/chatrooms/new' element={<CreateChat setError={setError} isAnEdit={false} chatroom={null}/>} />
+          <Route path='/log-in' element={<LogIn hasAuth={hasAuth} setError={setError} setHasAuth={setHasAuth} />} />
           <Route path='/sign-up'  element={<SignUp hasAuth={hasAuth} setError={setError} setHasAuth={setHasAuth} /> } />
-          <Route path='error' element={<Error error={error} />} />
+          <Route path='/error' element={<Error error={error} />} />
         </Routes>
-      </MemoryRouter>
+      </BrowserRouter>
     </>
   )
 }
