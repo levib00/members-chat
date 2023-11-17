@@ -34,10 +34,13 @@ const LogIn = (props: ILogInProps) => {
           <label htmlFor="password">Password:</label>
           <input type="text" id="password" onChange={(e) => setPasswordInput(e.target.value)} value={passwordInput}/>
         </div>
-        <button onClick={(e) => submitPost('localhost', {usernameInput, passwordInput}, e, validateLogIn, setError, setValidationError, navigate, null)}>Log in</button>
-        <ul>
-          <li>{validationError}</li>
-        </ul>
+        <button onClick={(e) => submitPost('http://localhost:3000/users/log-in', {username: usernameInput, password: passwordInput}, e, validateLogIn, setError, setValidationError, navigate, setHasAuth)}>Log in</button>
+        { 
+          validationError && 
+          <ul>
+            <li>{validationError}</li>
+          </ul>
+        }
       </form>
       <Link to='/sign-up'><button>Don't have an account?</button></Link>
     </>
