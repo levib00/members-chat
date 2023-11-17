@@ -7,16 +7,18 @@ import '@testing-library/jest-dom'
 
 describe("Cards renders correct info", () => {
   const mockResponse = {
-    name: 'room0',
+    roomName: 'room0',
     password: '1234',
     isPublic: true,
-    chatroomId: '4321' 
+    _id: '4321' 
   }
+
+  const setError = jest.fn()
 
   test('Card shows with info', () => {
     render(
       <MemoryRouter>
-        <ChatroomCard chatroomInfo={mockResponse} />
+        <ChatroomCard chatroomInfo={mockResponse} setError={setError} hasUser={true} />
       </MemoryRouter>
     );
 

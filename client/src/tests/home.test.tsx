@@ -9,7 +9,7 @@ describe("Chatroom gets messages then renders them", () => { // TODO: double che
     
     render(
       <MemoryRouter>
-        <Home />
+        <Home hasAuth={false} />
       </MemoryRouter>
     );
 
