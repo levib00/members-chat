@@ -25,6 +25,7 @@ const ChatroomList = (props: IChatroomListProps) => {
 
   return (
     <>
+      <Link to='/chatrooms/new'><button>Create a new chatroom</button></Link>
       {user && chatrooms?.map((chatroom: IChatroomInfo) => <ChatroomCard key={uuid()} chatroomInfo={chatroom} setError={props.setError} hasUser={user.chatrooms.includes(chatroom._id)} />)}
     </>
   )
