@@ -27,13 +27,13 @@ const ChatroomCard = (props: ChatroomCardProps) => {
 
   const navigate = useNavigate()
 
-  const clickJoin = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    if (!isJoining && !isPublic) {
+  const clickJoin = async(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    if ((!isJoining && !isPublic) && !hasUser) {
       setIsJoining(true)
     } else if (hasUser) {
       navigate(`/chatrooms/${_id}`)
     } else {
-      submitPost(
+      const response = submitPost(
         `http://localhost:3000/users/join/${_id}`,
         {password: passwordInput}, 
         e,
@@ -43,6 +43,9 @@ const ChatroomCard = (props: ChatroomCardProps) => {
         navigate,
         null
       )
+      if ( typeof await response !== 'undefined') {
+        navigate(`/chatrooms/${_id}`)
+      }
     }
   }
 
