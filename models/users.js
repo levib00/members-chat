@@ -4,10 +4,10 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const UserSchema = new Schema({
-  first_name: {
+  firstName: {
     type: String, required: true, minLength: 2, maxLength: 16,
   },
-  last_name: {
+  lastName: {
     type: String, required: true, minLength: 2, maxLength: 16,
   },
   username: {
@@ -16,15 +16,12 @@ const UserSchema = new Schema({
   password: {
     type: String, required: true,
   },
-  member_status: {
-    type: Boolean, required: true,
-  },
   isAdmin: {
     type: Boolean,
   },
-  chatrooms: {
+  chatrooms: [{
     type: Schema.ObjectId, ref: 'user', required: true,
-  },
+  }],
 });
 
 // Export model.
