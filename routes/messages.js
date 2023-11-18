@@ -2,16 +2,20 @@ const express = require('express');
 
 const router = express.Router();
 const messagesController = require('../controllers/messages-controller');
+const verifyToken = require('../middleware/verifyToken');
 
-// GET messageCreatePosts listing.
-router.get('/', (req, res, next) => {
-  res.redirect('/');
-});
+router.get('/', verifyToken, messagesController.messagesGet);
 
-router.get('/new', messagesController.messageCreateGet);
+router.get('/chatroom/:chatroomId', verifyToken, messagesController.messagesGet);
 
-router.post('/new', messagesController.messageCreatePost);
+router.get('/:messageId', verifyToken, messagesController.oneMessageGet);
 
-router.post('/delete', messagesController.messageDeletePost);
+router.get('/user/:userId', verifyToken, messagesController.userMessagesGet);
+
+router.delete('/delete/:messageId', verifyToken, messagesController.messageDelete);
+
+router.put('/edit/:messageId', verifyToken, messagesController.messageEdit);
+
+router.post('/:chatroomId', verifyToken, messagesController.messagePost);
 
 module.exports = router;

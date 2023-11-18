@@ -4,12 +4,14 @@ const router = express.Router();
 const chatroomsController = require('../controllers/chatrooms-controller');
 const verifyToken = require('../middleware/verifyToken');
 
-router.get('/', verifyToken, chatroomsController.allChatroomsGet);
+router.get('/', chatroomsController.allChatroomsGet);
 
-router.post('/new', chatroomsController.createChatroomPost);
+router.get('/:chatroomId', chatroomsController.oneChatroomGet);
 
-router.delete('/:chatroomId/delete', chatroomsController.deleteChatroom);
+router.post('/new', verifyToken, chatroomsController.createChatroomPost);
 
-router.put('/:chatroomId/edit', chatroomsController.editChatroom);
+router.delete('/delete/:chatroomId', verifyToken, chatroomsController.deleteChatroom);
+
+router.put('/edit/:chatroomId', verifyToken, chatroomsController.editChatroom);
 
 module.exports = router;
