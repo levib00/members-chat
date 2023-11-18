@@ -11,8 +11,8 @@ exports.allChatroomsGet = asyncHandler(async (req, res, next) => {
 });
 
 exports.oneChatroomGet = asyncHandler(async (req, res, next) => {
-  const chatrooms = await Chatroom.findById();
-  res.json(chatrooms);
+  const chatroom = await Chatroom.findById(req.params.chatroomId);
+  res.json(chatroom);
 });
 
 exports.createChatroomPost = [
@@ -20,22 +20,26 @@ exports.createChatroomPost = [
   body('roomName', 'Room name must not be empty.')
     .trim()
     .isLength({ max: 64 })
-    .withMessage('message must be less than 300 characters long.')
+    .withMessage('message must be less than 64 characters long.')
     .escape(),
   body('password', 'Password must not be empty.')
     .trim()
     .isLength({ max: 64 })
     .withMessage('password must be less than 64 characters long.')
     .escape(),
+  body('passwordConfirmation')
+    .custom((value, { req }) => value === req.body.password)
+    .withMessage('passwords must match.')
+    .escape(),
 
   // Process request after validation and sanitization.
 
   asyncHandler(async (req, res, next) => {
     // Extract the validation errors from a request.
-    if (req.token === null) { // TODO: decide if i like return like here or else like above
+    if (req.token === null) {
       return res.status(403).json({ error: 'You are not signed in.' });
     }
-    jwt.verify(req.token, process.env.JWT_SECRET, async (jwtErr, user) => {
+    jwt.verify(req.token, process.env.JWT_SECRET, async (jwtErr, tokenUser) => {
       if (jwtErr) {
         res.status(403);
       }
@@ -44,9 +48,8 @@ exports.createChatroomPost = [
           res.status(403);
         }
         const errors = validationResult(req);
-        const userObject = await User.findById(user._id)
+        const userObject = await User.findById(tokenUser._id);
 
-        //! not sure if this will work with real mongoose
         const chatroom = new Chatroom({
           roomName: req.body.roomName,
           password: hashedPassword,
@@ -69,7 +72,7 @@ exports.createChatroomPost = [
 ];
 
 exports.deleteChatroom = asyncHandler(async (req, res, next) => {
-  if (req.token === null) { // TODO: decide if i like return like here or else like above
+  if (req.token === null) {
     return res.status(403).json({ error: 'You are not signed in.' });
   }
   jwt.verify(req.token, process.env.JWT_SECRET, async (err, user) => {
@@ -78,7 +81,6 @@ exports.deleteChatroom = asyncHandler(async (req, res, next) => {
     }
     const chatroom = await Chatroom.findById(req.params.chatroomId);
 
-    //! not sure if this will work with real mongoose
     if ((chatroom.createdBy._id === user._id) || user.isAdmin) {
       // Data from form is valid. Save message.
       await Chatroom.findByIdAndRemove(req.params.messageId);
@@ -103,17 +105,19 @@ exports.editChatroom = [
     .trim()
     .isLength({ max: 64 })
     .withMessage('password must be less than 64 characters long.')
-    .isLength({ mni: 8 })
-    .withMessage('password must be more than 8 characters long.')
     .escape(),
-
+  body('passwordConfirmation')
+    .custom((value, { req }) => value === req.body.password)
+    .withMessage('passwords must match.')
+    .escape(),
+  
   // Process request after validation and sanitization.
 
   asyncHandler(async (req, res, next) => {
-    if (req.token === null) { // TODO: decide if i like return like here or else like above
+    if (req.token === null) {
       return res.status(403).json({ error: 'You are not signed in.' });
     }
-    jwt.verify(req.token, process.env.JWT_SECRET, async (jwtErr, user) => {
+    jwt.verify(req.token, process.env.JWT_SECRET, async (jwtErr, tokenUser) => {
       if (jwtErr) {
         res.status(403);
       }
@@ -122,13 +126,13 @@ exports.editChatroom = [
           res.status(403);
         }
         const errors = validationResult(req);
-        const userObject = await User.findById(user._id)
-        const oldChatroom = await Chatroom.findById(req.params.chatroomId)
+        const userObject = await User.findById(tokenUser._id)
+        const oldChatroom =  await Chatroom.findById(req.params.chatroomId)
           .populate('createdBy')
           .exec();
-        //! not sure if this will work with real mongoose
-        if ((oldChatroom.createdBy._id === user._id) || user.isAdmin) {
-          const chatroom = new Chatroom({
+
+        if (oldChatroom.createdBy._id.equals(userObject._id) || userObject.isAdmin) {
+          const newChatroom =  new Chatroom({
             roomName: req.body.roomName,
             password: hashedPassword,
             isPublic: req.body.isPublic,
@@ -138,12 +142,12 @@ exports.editChatroom = [
           if (!errors.isEmpty()) {
             res.status(400).json({
               errors: errors.array(),
-              chatroom,
+              newChatroom,
             });
           } else {
             // Data from form is valid. Save chatroom.
-            await chatroom.save();
-            res.json(chatroom);
+            await Chatroom.findByIdAndUpdate(req.params.chatroomId, newChatroom, {});
+            res.json(newChatroom);
           }
         } else {
           res.status(403).json({ error: 'You need to be the user who created the chatroom you are trying to edit.' });
