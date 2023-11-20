@@ -6,12 +6,14 @@ const Chatroom = require('../models/chatroom');
 const User = require('../models/users');
 
 exports.allChatroomsGet = asyncHandler(async (req, res, next) => {
-  const chatrooms = await Chatroom.find();
+  const chatrooms = await Chatroom.find()
+  .select('-password');
   res.json(chatrooms);
 });
 
 exports.oneChatroomGet = asyncHandler(async (req, res, next) => {
-  const chatroom = await Chatroom.findById(req.params.chatroomId);
+  const chatroom = await Chatroom.findById(req.params.chatroomId)
+  .select('-password');
   res.json(chatroom);
 });
 
@@ -50,7 +52,7 @@ exports.createChatroomPost = [
         const errors = validationResult(req);
         const userObject = await User.findById(tokenUser._id);
 
-        const chatroom = new Chatroom({
+        const newChatroom = new Chatroom({
           roomName: req.body.roomName,
           password: hashedPassword,
           isPublic: req.body.isPublic,
@@ -59,12 +61,14 @@ exports.createChatroomPost = [
         if (!errors.isEmpty()) {
           res.status(400).json({
             errors: errors.array(),
-            chatroom,
+            newChatroom: {
+              roomName: newChatroom.roomName, isPublic: newChatroom.isPublic, createdBy: newChatroom.createdBy, _id: newChatroom._id
+            },
           });
           // Data from form is valid. Save message.
         } else {
-          await chatroom.save();
-          res.json(chatroom);
+          await newChatroom.save();
+          res.json({ roomName: newChatroom.roomName, isPublic: newChatroom.isPublic, createdBy: newChatroom.createdBy, _id: newChatroom._id });
         }
       });
     });
@@ -147,7 +151,7 @@ exports.editChatroom = [
           } else {
             // Data from form is valid. Save chatroom.
             await Chatroom.findByIdAndUpdate(req.params.chatroomId, newChatroom, {});
-            res.json(newChatroom);
+            res.json({ roomName: newChatroom.roomName, isPublic: newChatroom.isPublic, createdBy: newChatroom.createdBy, _id: newChatroom._id });
           }
         } else {
           res.status(403).json({ error: 'You need to be the user who created the chatroom you are trying to edit.' });
