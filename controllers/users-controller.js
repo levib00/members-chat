@@ -15,13 +15,17 @@ exports.allUsersGet = asyncHandler(async (req, res, next) => {
   // Get all users
   jwt.verify(req.token, process.env.JWT_SECRET, async (err, user) => {
     if (err) {
-      res.send(err);
-    } else if (!user.isAdmin) {
+      return res.json(err);
+    }
+    const currentUser = await User.findById(user._id)
+
+    if (!currentUser.isAdmin) {
       res.status(403).send({
         error: 'Forbidden',
       });
     } else {
-      const users = await User.find();
+      const users = await User.find()
+      .select('-password');
       res.json(users);
     }
   });
@@ -31,14 +35,37 @@ exports.selfGet = asyncHandler(async (req, res, next) => {
   if (req.token === null) {
     return res.status(403).json({ error: 'You are not signed in.' });
   }
-  // Get all users
+  jwt.verify(req.token, process.env.JWT_SECRET, async (err, user) => {
+    if (err) {
+      res.json(err);
+    } else {
+      const currentUser = await User.findById(user._id)
+      .select('-password');
+      res.json(currentUser);
+    }// show different information depending on whether or not user is a member.
+  });
+});
+
+exports.userGet = asyncHandler(async (req, res, next) => {
+  if (req.token === null) {
+    return res.status(403).json({ error: 'You are not signed in.' });
+  }
   jwt.verify(req.token, process.env.JWT_SECRET, async (err, user) => {
     if (err) {
       res.send(err);
+    }
+    const currentUser = await User.findById(user._id)
+    if (!currentUser.isAdmin) {
+      const user = await User.findById(user._id)
+        .select('-password')
+        .select('-lastName')
+        .select('-chatrooms');
+      res.json(user);
     } else {
-      const users = await User.findById(user._id);
-      res.json(users);
-    }// show different information depending on whether or not user is a member.
+      const user = await User.findById(user._id)
+        .select('-password')
+      res.json(user);
+    }
   });
 });
 
@@ -56,18 +83,19 @@ exports.userJoinChatroom = [
       return res.status(403).json({ error: 'You are not signed in.' });
     }
     jwt.verify(req.token, process.env.JWT_SECRET, async (err, user) => {
+      const currentUser = await User.findById(user._id);
       if (err) {
         res.status(403).json({ error: 'Forbidden' });
       } else {
         const chatroom = await Chatroom.findById(req.params.chatroomId);
-        if (user.chatrooms.includes(chatroom._id)) {
+        if (currentUser.chatrooms.includes(chatroom._id)) {
           res.status(403).json(user.chatrooms);
         } else {
           const match = bcrypt.compare(req.body.password, chatroom.password);
-          if (!await match) {
+          if (!await match && !currentUser.isAdmin) {
             return res.status(401).json({ error: 'Incorrect password' });
           } else {
-            const userChatrooms = [...user.chatrooms, chatroom];
+            const userChatrooms = [...currentUser.chatrooms, chatroom];
             const newUser = new User({
               first_name: user.firstName,
               last_name: user.lastName,
@@ -78,7 +106,7 @@ exports.userJoinChatroom = [
             });
 
             await User.findByIdAndUpdate(user._id, newUser, {});
-            res.json(user.chatrooms);
+            res.json(currentUser.chatrooms);
           }
         }
       }
@@ -91,26 +119,26 @@ exports.userLeaveChatroom = asyncHandler(async (req, res, next) => {
     return res.status(403).json({ error: 'You are not signed in.' });
   }
   jwt.verify(req.token, process.env.JWT_SECRET, async (err, user) => {
-    const thisUser = await User.findById(user._id)
+    const currentUser = await User.findById(user._id)
     if (err) {
       res.status(403).json({ error: 'Forbidden' });
     } else {     
-      const chatroomIndex = thisUser.chatrooms.indexOf(req.params.chatroomId)
+      const chatroomIndex = currentUser.chatrooms.indexOf(req.params.chatroomId)
       if (chatroomIndex < 0) {
         return res.status(403).json( { error: 'You are not in this chatroom.' })
       } else {
-        thisUser.chatrooms.splice(chatroomIndex, 1);
+        currentUser.chatrooms.splice(chatroomIndex, 1);
         const newUser = new User({
-          first_name: thisUser.firstName,
-          last_name: thisUser.lastName,
-          username: thisUser.username,
-          password: thisUser.password,
-          chatrooms: thisUser.chatrooms,
-          _id: thisUser._id,
+          first_name: currentUser.firstName,
+          last_name: currentUser.lastName,
+          username: currentUser.username,
+          password: currentUser.password,
+          chatrooms: currentUser.chatrooms,
+          _id: currentUser._id,
         });
 
         await User.findByIdAndUpdate(thisUser._id, newUser, {});
-        res.json(thisUser.chatrooms);
+        res.json(currentUser.chatrooms);
       }
     }
   });
@@ -171,7 +199,7 @@ exports.userCreatePost = [
               lastName: req.body.lastName,
               username: req.body.username,
               password: hashedPassword,
-              member_status: false,
+              isAdmin: false,
             });
   
             if (!errors.isEmpty()) {
@@ -182,7 +210,7 @@ exports.userCreatePost = [
             } else {
               // Data from form is valid. Save user.
               await user.save();
-              return res.json(user);
+              return res.json({firstName: user.firstName, lastName: user.lastName, username: user.username, isAdmin: user.isAdmin});
             }
           }
         });
