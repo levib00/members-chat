@@ -7,45 +7,37 @@ const User = require('../models/users');
 require('dotenv').config();
 
 exports.messagesGet = asyncHandler(async (req, res, next) => {
-  // Send messages
   if (req.token === null) {
     res.status(403).json({ error: 'You are not signed in.' });
   }
   jwt.verify(req.token, process.env.JWT_SECRET, async (err, user) => {
-    const thisUser = await User.findById(user._id);
-    if (err || !thisUser) {
-      res.status(403);
-    } else if (thisUser.isAdmin) {
-      const messages = await Message.find();
-      res.json({
-        messages,
-      });
+    if (err) {
+      return res.status(403);
+    } 
+    const chatroom = await Chatroom.findById(req.params.chatroomId);
+    const currentUser = await User.findById(user._id);
+    if (currentUser.chatrooms.includes(chatroom._id) || currentUser.isAdmin) {
+      const messages = await Message.find({ roomId: req.params.chatroomId })
+        .populate('username')
+        .exec();
+      res.json({messages, chatroom});
     } else {
-      const chatroom = await Chatroom.findById(req.params.chatroomId);
-      //! not sure if this will work with real mongoose
-      if (thisUser.chatrooms.includes(chatroom._id)) {
-        const messages = await Message.find({ roomId: req.params.chatroomId })
-          .populate('username')
-          .exec();
-        res.json({messages, chatroom});
-      } else {
-        res.status(403).json({ error: 'You need to be an admin or a member of any servers you are trying to read.' });
-      }
+      res.status(403).json({ error: 'You need to be an admin or a member of any servers you are trying to read.' });
     }
   });
 });
 
 exports.oneMessageGet = asyncHandler(async (req, res, next) => {
-  // Send one message
   if (req.token === null) {
     res.status(403).json({ error: 'You are not signed in.' });
   } else {
     jwt.verify(req.token, process.env.JWT_SECRET, async (err, user) => {
       if (err) {
-        res.status(403);
+       return res.status(403);
       }
+      const currentUser = await User.findById(user._id);
       const message = await Message.findById(req.params.messageId);
-      if (user.isAdmin) {
+      if (currentUser.isAdmin) {
         res.json({
           message,
         });
@@ -59,18 +51,17 @@ exports.oneMessageGet = asyncHandler(async (req, res, next) => {
 });
 
 exports.userMessagesGet = asyncHandler(async (req, res, next) => {
-  // Send one message
-  if (req.token === null) { // TODO: decide if i like return like here or else like above
+  if (req.token === null) {
     return res.status(403).json({ error: 'You are not signed in.' });
   }
   jwt.verify(req.token, process.env.JWT_SECRET, async (err, user) => {
     if (err) {
       res.status(403);
-    }//! not sure if this will work with real mongoose
+    }
     const message = await Message.find({ username: req.params.userId }); 
     if (user.isAdmin) {
       res.json({ message });
-    } else if (req.params.userId === user._id) { //! not sure if this will work with real mongoose
+    } else if (req.params.userId === user._id) {
       res.json(message);
     } else {
       res.status(403).json({ error: 'You need to be an admin or the user who\'s message you are trying to get.' });
@@ -84,13 +75,14 @@ exports.messageDelete = asyncHandler(async (req, res, next) => {
   }
   jwt.verify(req.token, process.env.JWT_SECRET, async (err, user) => {
     if (err) {
-      res.status(403);
+      return res.status(403);
     }
+    const currentUser = await User.findById(user._id)
     const oldMessage = await Message.findById(req.params.messageId)
     .populate('username')
     .exec();
 
-    if ((oldMessage.username._id.equals(user._id)) || user.isAdmin) {
+    if ((oldMessage.username._id.equals(user._id)) || currentUser.isAdmin) {
       // Data from form is valid. Save message.
       await Message.findByIdAndRemove(req.params.messageId);
       res.json({ message: 'message deleted' });
@@ -117,7 +109,7 @@ exports.messageEdit = [
     }
     jwt.verify(req.token, process.env.JWT_SECRET, async (err, user) => {
       if (err) {
-        res.status(403);
+        return res.status(403);
       }
       const errors = validationResult(req);
       const oldMessage = await Message.findById(req.params.messageId)
@@ -173,7 +165,6 @@ exports.messagePost = [
 
       const chatroom = await Chatroom.findById(req.params.chatroomId);
       const userObject = await User.findById(user._id)
-      console.log(user, userObject)
 
       const message = new Message({
         content: req.body.content,
