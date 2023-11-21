@@ -2,7 +2,7 @@ import { SetStateAction } from "react";
 import { NavigateFunction } from "react-router-dom";
 import { IErrorObject } from "../App";
 
-type valFunctionArgs = (response: { [key: string]: any; }, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: any ) => Promise<void>
+type valFunctionArgs = (response: { [key: string]: any; }, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: any, ws: WebSocket | null) => Promise<void>
 
 export const validateCreateChat = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }) => {
   if (response.status === 200) {
@@ -13,21 +13,24 @@ export const validateCreateChat = async(response: {[key: string]: any}, navigate
   }
 }
 
-export const validateMessageEdit = async(response: { [key: string]: any; }, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; },) => {
+export const validateMessageEdit = async(response: { [key: string]: any; }, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: null, ws: WebSocket ) => {
+  const jsonResponse = await response.json()
   if (response.status === 200) {
-    navigate('/chatrooms') // Redirect if user successfully logged in.
+    // TODO: figure out how to send a message to ws
+    
+    ws.send(JSON.stringify(jsonResponse))
   } else {
-    const errorResponse = await response.json()
-    setValidationError(errorResponse.error)
+    setValidationError(jsonResponse.error)
   }
 }
 
-export const validateCreateDeleteMessage = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }) => {
+export const validateCreateDeleteMessage = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: null, ws: any) => {
+  const jsonResponse = await response.json()
   if (response.status === 200) {
-    // figure out how to send a message to ws
+    // TODO: figure out how to send a message to ws
+    ws.send(JSON.stringify(jsonResponse))
   } else {
-    const errorResponse = await response.json()
-    setValidationError(errorResponse.error)
+    setValidationError(jsonResponse.error)
   }
 }
 
@@ -86,6 +89,7 @@ export const submitPost = async(
  setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, 
  navigate: NavigateFunction,
  setHasAuth: any,
+ ws: WebSocket | null,
  ) => {
   e.preventDefault()
   try {
@@ -108,7 +112,7 @@ export const submitPost = async(
       },      
       mode: 'cors'
     })
-    return validationFunction(response, navigate, setValidationError, setHasAuth)
+    return validationFunction(response, navigate, setValidationError, setHasAuth, ws)
   } catch (error: any) {
     setError(error) // Redirect to error page if there is a non-validation error.
   }
