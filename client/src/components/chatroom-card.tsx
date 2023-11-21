@@ -41,6 +41,7 @@ const ChatroomCard = (props: ChatroomCardProps) => {
         setError, 
         setValidationError, 
         navigate,
+        null,
         null
       )
       if ( typeof await response !== 'undefined') {

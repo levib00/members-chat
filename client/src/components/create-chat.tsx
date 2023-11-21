@@ -22,8 +22,7 @@ const CreateChat = (props: ICreateChatProps) => {
   const [isTheSame] = useState(passwordInput === confirmPasswordInput)
   const [isPublic, setIsPublic] = useState(chatroom?.isPublic || false)
   const navigate = useNavigate();
-  const { chatroomId } = useParams()
-  
+  const { chatroomId } = useParams()  
 
   const submitForm = async(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault()
@@ -63,6 +62,7 @@ const CreateChat = (props: ICreateChatProps) => {
           setError, 
           setValidationError, 
           navigate, 
+          null,
           null
         )
       }
