@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { validateCreateDeleteMessage, validateMessageEdit } from "../utility-functions/post-fetch";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { IErrorObject } from "../App";
 
 
@@ -26,10 +26,11 @@ interface IMessagesProps {
   currentUser: IUserObject,
   messageInfo: IMessageInfo,
   setError: React.Dispatch<React.SetStateAction<IErrorObject>>,
+  ws: any
 };
 
 function Message(props: IMessagesProps) {
-  const {messageInfo, currentUser, setError} = props;
+  const {messageInfo, currentUser, setError, ws} = props;
   const {username, timestamp, content, _id} = messageInfo;
 
   const [messageInput, setMessageInput] = useState(content)
@@ -59,7 +60,7 @@ function Message(props: IMessagesProps) {
         },      
         mode: 'cors'
       })
-      validateCreateDeleteMessage(response, navigate, setValidationError)
+      validateCreateDeleteMessage(response, navigate, setValidationError, null, ws)
     } catch (error: any) {
       setError(error) // Redirect to error page if there is a non-validation error.
     }
@@ -86,17 +87,17 @@ function Message(props: IMessagesProps) {
         },      
         mode: 'cors'
       })
-      validateMessageEdit(response, navigate, setValidationError)
+      validateMessageEdit(response, navigate, setValidationError, null, ws)
     } catch (error: any) {
       setError(error) // Redirect to error page if there is a non-validation error.
     }
   }
 
   return (
-    <>
+    <div>
       <div>
         <div>
-          {username.username}
+          {username?.username}
         </div>
         <div>
           {`${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`}
@@ -106,14 +107,14 @@ function Message(props: IMessagesProps) {
         </div>
       </div>
       {
-        ((currentUser._id === username._id) || currentUser.isAdmin) &&
+        ((currentUser?._id === username._id) || currentUser?.isAdmin) &&
         <div>
-          {((currentUser._id === username._id) && (isEditing ? <button onClick={() => setIsEditing(!isEditing)}>Cancel</button> : <button onClick={() => setIsEditing(!isEditing)}>Edit</button>))}
+          {((currentUser?._id === username._id) && (isEditing ? <button onClick={() => setIsEditing(!isEditing)}>Cancel</button> : <button onClick={() => setIsEditing(!isEditing)}>Edit</button>))}
           {isEditing ? <button onClick={sendEdit}>save</button> : <button onClick={deleteMessage}>Delete</button>}
         </div>
       }
       <p>{validationError}</p>
-    </>
+    </div>
   )
 };
 
