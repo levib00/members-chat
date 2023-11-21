@@ -41,19 +41,18 @@ app.set('port', port);
 const server = http.createServer(app);
 
 const wss = new webSocket.Server({ server });
-wss.on('connection', (ws) => {
-  // connection is up, let's add a simple simple event
-  ws.on('message', (message) => {
-    // console.log(message);
-    console.log(JSON.parse(message));
-    // log the received message and send it back to the client
-    // console.log('received: %s', message);
-    ws.send(`Hello, you sent -> ${message}`);
-  });
+wss.on('connection', (ws, req) => {
+  // TODO: find a way to only send messages per chatroom and auth
+  ws.on('message', (data) => {
+    wss.clients.forEach(function each(client) {
+      // TODO: decide if vv i want to send data that user sent back to themselves.
+      if (/*client !== ws &&*/ client.readyState === wss.options.WebSocket.OPEN) {
+        client.send(`${data}`);
+      }
+    })
+  })
   console.log('connected');
 
-  // send immediately a feedback to the incoming connection
-  ws.send('Hi there, I am a WebSocket server');
 });
 
 /**
