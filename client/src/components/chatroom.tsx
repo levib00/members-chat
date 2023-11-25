@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { getFetcher } from "../utility-functions/fetcher";
-import { submitPost, validateLeaveChatroom } from '../utility-functions/post-fetch'
-import { validateCreateDeleteMessage } from "../utility-functions/post-fetch"
-import Message from "./message"
+import { submitPost, validateLeaveChatroom } from '../utility-functions/post-fetch';
+import { validateCreateDeleteMessage } from "../utility-functions/post-fetch";
+import Message from "./message";
 import useSWR from "swr";
 import { useNavigate, useParams } from "react-router-dom";
 import { IErrorObject } from "../App";
 import CreateChat from "./create-chat";
-import { v4 as uuid } from "uuid"
+import { v4 as uuid } from "uuid";
+import mongoose from "mongoose";
+import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 interface IMessageObject {
   username: {
@@ -16,7 +18,7 @@ interface IMessageObject {
     lastName: string,
     username: string
   },
-  timestamp: string,
+  timestamp: Date,
   content: string,
   _id: any
 };
@@ -35,23 +37,38 @@ const Chatroom = (props: IChatroomProps) => {
   const [validationError, setValidationError] = useState('')
   const [leavingError, setLeavingError] = useState('')
   const [jwt] = useState(localStorage.getItem('jwt'))
-  const [ws] = useState(new WebSocket(`ws://localhost:3000/ws?token=${jwt}`)) // TODO: set to wss in prod also change other links to https
+  const { sendMessage, lastJsonMessage, readyState } = useWebSocket(`ws://localhost:3000/ws?token=${jwt}&chatroomId=${chatroomId}`, {
+    //Will attempt to reconnect on all close events, such as server shutting down
+    shouldReconnect: (closeEvent) => true,
+  }); // TODO: set to wss in prod also change other links to https
 
   const {data: user,  error: userError} = useSWR(`http://localhost:3000/users/user`, getFetcher)
 
-  const handleSendMessage = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    setMessageInput('')
-    submitPost(
+  const handleSendMessage = async(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    setMessageInput('');
+    const objectId = new mongoose.Types.ObjectId();
+    const date = new Date(Date.now());
+    handleNewWsMessage({
+      username: user,
+      timestamp: date,
+      content: messageInput,
+      _id: objectId
+    });
+    const jsonResponse = await submitPost(
       `http://localhost:3000/messages/${chatroomId}`,
-      {content: messageInput}, 
+      {content: messageInput, _id: objectId}, 
       e,
       validateCreateDeleteMessage,
       setError, 
       setValidationError, 
       navigate,
       null,
-      ws
+      sendMessage
     )
+    
+    if (await jsonResponse.error) {
+      // TODO: put notification that message couldn't be sent on screen.
+    }
   };
 
   const {data: response,  error: commentError, mutate} = useSWR(`http://localhost:3000/messages/chatroom/${chatroomId}`, getFetcher)
@@ -66,17 +83,16 @@ const Chatroom = (props: IChatroomProps) => {
       setLeavingError, 
       navigate,
       null,
-      null
+      () => null
     )
   }
 
-  const handleNewWsMessage = (message: IMessageObject) => {
-    const objIndex = response?.messages?.findIndex(((obj: IMessageObject ) => obj._id === message._id))
-
+  const handleNewWsMessage = (message: {[key: string]: any}| undefined) => {
+    const objIndex = response?.messages?.findIndex(((obj: IMessageObject ) => obj._id === message?._id))
     if (objIndex < 0) {
       const newMessages = [...response.messages, message]
-      mutate({ ...response, messages: newMessages})
-    } else if (!message.content) {
+      mutate({ ...response, messages: newMessages}, { revalidate: false })
+    } else if (!message?.content) {
       const newMessages = [...response.messages]
       newMessages.splice(objIndex, 1)
       mutate({ ...response, messages: newMessages})
@@ -86,19 +102,14 @@ const Chatroom = (props: IChatroomProps) => {
       mutate({ ...response, messages: newMessages})
     }
   }
+
   useEffect(() => {
-    ws.onmessage = function (event: any) {
-      
-      const json = JSON.parse(event.data);
-      try {
-        handleNewWsMessage(json);
-      } catch (err) {
-        console.log(err);
-      }
+    if (lastJsonMessage !== null) {
+      handleNewWsMessage(lastJsonMessage);
     }
-  })
+  }, [lastJsonMessage])
   
-  return (
+  return ( // TODO: add field validation on inputs through app.
       <div>
         {modalIsOpen &&
           <div>
@@ -111,7 +122,7 @@ const Chatroom = (props: IChatroomProps) => {
           <button onClick={(e) => leaveChat(e)}>Leave chat</button>
           {leavingError ? leavingError : null}
         </div>
-        { response?.messages?.map((message: IMessageObject) => <Message key={(uuid())} setError={ setError } currentUser={ user } messageInfo={ message } ws={ ws } />) }
+        { response?.messages?.map((message: IMessageObject) => <Message key={(uuid())} setError={ setError } currentUser={ user } messageInfo={ message } sendMessage={ sendMessage } />) }
         <div>
           <label htmlFor="message-box"></label>
           <input id="message-box" type="text" onChange={(e) => setMessageInput(e.target.value)} value={messageInput} />
@@ -119,7 +130,7 @@ const Chatroom = (props: IChatroomProps) => {
             <button onClick={(e) =>handleSendMessage(e)}>Send</button>
             {
               validationError && 
-              <ul>
+              <ul> {/* // TODO: allow for array. if isArray.map  */}
                 <li key={uuid()}>{validationError}</li>
               </ul>
             }
