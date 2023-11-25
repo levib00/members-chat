@@ -1,59 +1,68 @@
-import { SetStateAction } from "react";
+import { SetStateAction, useCallback } from "react";
 import { NavigateFunction } from "react-router-dom";
 import { IErrorObject } from "../App";
+import mongoose from "mongoose";
 
-type valFunctionArgs = (response: { [key: string]: any; }, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: any, ws: WebSocket | null) => Promise<void>
+type valFunctionArgs = (response: { [key: string]: any; }, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: any, sendMessage: ((message: string) => void)) => Promise<void>
 
 export const validateCreateChat = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }) => {
   if (response.status === 200) {
     navigate('/chatrooms') // Redirect if user successfully logged in.
+    return response.status
   } else {
     const errorResponse = await response.json()
     setValidationError(errorResponse.error)
+    return errorResponse
   }
+} //TODO: maybe collapse these into DI function
+
+export const validateMessageEdit = async(response: { [key: string]: any; }, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: null, sendMessage: (message: string) => void) => {
+  const jsonResponse: any = await response.json()
+  if (response.status === 200) {    
+    const stringifiedResponse = JSON.stringify(jsonResponse)
+    sendMessage(stringifiedResponse);
+  } else {
+    setValidationError(jsonResponse.error)
+  }
+  return jsonResponse
 }
 
-export const validateMessageEdit = async(response: { [key: string]: any; }, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: null, ws: WebSocket ) => {
-  const jsonResponse = await response.json()
+export const validateCreateDeleteMessage = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: null, sendMessage: (message: string) => void) => {
+  const jsonResponse: any = await response.json()
   if (response.status === 200) {
-    // TODO: figure out how to send a message to ws
+    const stringifiedResponse = JSON.stringify(await jsonResponse)
+    console.log(sendMessage)
+    sendMessage(stringifiedResponse);
     
-    ws.send(JSON.stringify(jsonResponse))
   } else {
-    setValidationError(jsonResponse.error)
+    setValidationError(await jsonResponse.error)
   }
-}
-
-export const validateCreateDeleteMessage = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: null, ws: any) => {
-  const jsonResponse = await response.json()
-  if (response.status === 200) {
-    // TODO: figure out how to send a message to ws
-    ws.send(JSON.stringify(jsonResponse))
-  } else {
-    setValidationError(jsonResponse.error)
-  }
+  return await jsonResponse
 }
 
 export const validateJoinChatroom = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: any) => {
   const jsonResponse = await response.json()
   if (response.status === 200) {
-    return jsonResponse
-    // figure out how to send a message to ws
+    localStorage.setItem('jwt', await jsonResponse.token)
+    navigate(`/chatrooms/${jsonResponse.chatroomId}`)
+    return response.status
   } else if (jsonResponse.error) { // Sets and renders validation errors.
     setValidationError(jsonResponse.error)
-  } else {
-    setValidationError('Something went wrong. Please try again.')
+    return jsonResponse.error
   }
 }
 
 export const validateSignUp = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: any) => {
   if (response.status === 200) {
     navigate('/')
+    return response.status
   } else if (response.status === 401) { // Sets and renders validation errors.
     setValidationError('Username or password are invalid.')
+    return response.status
   } else {
     const errorResponse = await response.json()
     setValidationError(errorResponse.error)
+    return errorResponse
   }
 }
 
@@ -63,33 +72,40 @@ export const validateLogIn = async(response: {[key: string]: any}, navigate: Nav
     localStorage.setItem('jwt', await tokenObject.token)
     setHasAuth(true);
     navigate('/')
+    return response.status
   } else if (response.status === 401) { // Sets and renders validation errors.
     setValidationError('Wrong username or password.')
+    return response.status
   } else {
     const errorResponse = await response.json()
     setValidationError(errorResponse.error)
+    return errorResponse
   }
 }
 
 export const validateLeaveChatroom = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: any) => {
   if (response.status === 200) {
+    const tokenObject = await response.json()
+    localStorage.setItem('jwt', await tokenObject.token)
     navigate('/chatrooms')
+    return response
   } else {
     const errorResponse = await response.json()
     setValidationError(errorResponse.error)
+    return errorResponse
   }
 }
 
 export const submitPost = async(
  url: string,
- body: { [key: string]: string | boolean }, 
+ body: { [key: string]: string | boolean | mongoose.Types.ObjectId }, 
  e: { preventDefault: () => void; },
  validationFunction: valFunctionArgs,
  setError: { (value: SetStateAction<IErrorObject>): void; (arg0: any): void; }, 
  setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, 
  navigate: NavigateFunction,
  setHasAuth: any,
- ws: WebSocket | null,
+ sendMessage: ((message: string) => void),
  ) => {
   e.preventDefault()
   try {
@@ -112,8 +128,9 @@ export const submitPost = async(
       },      
       mode: 'cors'
     })
-    return validationFunction(response, navigate, setValidationError, setHasAuth, ws)
+    return validationFunction(response, navigate, setValidationError, setHasAuth, sendMessage)
   } catch (error: any) {
     setError(error) // Redirect to error page if there is a non-validation error.
+    return error
   }
 };
