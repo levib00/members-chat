@@ -42,7 +42,7 @@ const ChatroomCard = (props: ChatroomCardProps) => {
         setValidationError, 
         navigate,
         null,
-        null
+        () => null
       )
       if ( typeof await response !== 'undefined') {
         navigate(`/chatrooms/${_id}`)

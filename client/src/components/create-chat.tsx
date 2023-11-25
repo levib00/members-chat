@@ -63,7 +63,7 @@ const CreateChat = (props: ICreateChatProps) => {
           setValidationError, 
           navigate, 
           null,
-          null
+          () => null
         )
       }
     } else {

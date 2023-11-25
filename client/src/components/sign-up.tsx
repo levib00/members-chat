@@ -48,7 +48,7 @@ const SignUp = (props: ISignUpProps) => {
           <label htmlFor='confirm-password'>Confirm Password:</label>
           <input type="text" id='confirm-password' onChange={(e) => setConfirmPasswordInput(e.target.value)} value={confirmPasswordInput}/>
         </div>
-        <button onClick={(e) => submitPost('http://localhost:3000/users/sign-up', {firstName: firstNameInput, lastName: lastNameInput, username: usernameInput, password: passwordInput, passwordConfirmation: confirmPasswordInput}, e, validateSignUp, setError, setValidationError, navigate, null, null)}>Sign up</button>
+        <button onClick={(e) => submitPost('http://localhost:3000/users/sign-up', {firstName: firstNameInput, lastName: lastNameInput, username: usernameInput, password: passwordInput, passwordConfirmation: confirmPasswordInput}, e, validateSignUp, setError, setValidationError, navigate, null, () => null)}>Sign up</button>
         { 
           validationError && 
           <ul>
