@@ -1,4 +1,4 @@
-import { Routes, Route, MemoryRouter, BrowserRouter } from "react-router-dom";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
 import NavBar from './components/nav.js'
 import Home from "./components/home.js";
 import SignUp from "./components/sign-up.js";
@@ -18,11 +18,6 @@ export interface IErrorObject {
 const  App = () => {
   const [error, setError] = useState<IErrorObject>({} as IErrorObject)
   const [hasAuth, setHasAuth] = useState<boolean>(!!localStorage.getItem('jwt'))
-
-  const parseDom = (str: string) => {  // Parses special characters from html code to unicode characters.
-    const doc = new DOMParser().parseFromString(str, "text/html");
-    return doc.documentElement.textContent;
-  }
 
   return (
     <>
