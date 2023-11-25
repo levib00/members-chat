@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { validateCreateDeleteMessage, validateMessageEdit } from "../utility-functions/post-fetch";
 import { useNavigate } from "react-router-dom";
 import { IErrorObject } from "../App";
+import parseDom from "../utility-functions/dom-parser";
 
 
 interface IMessageInfo {
@@ -11,7 +12,7 @@ interface IMessageInfo {
     lastName: string,
     username: string
   },
-  timestamp: string,
+  timestamp: Date,
   content: string,
   _id: any
 };
@@ -26,17 +27,16 @@ interface IMessagesProps {
   currentUser: IUserObject,
   messageInfo: IMessageInfo,
   setError: React.Dispatch<React.SetStateAction<IErrorObject>>,
-  ws: any
+  sendMessage: (message: string) => void
 };
 
 function Message(props: IMessagesProps) {
-  const {messageInfo, currentUser, setError, ws} = props;
+  const {messageInfo, currentUser, setError, sendMessage} = props;
   const {username, timestamp, content, _id} = messageInfo;
 
   const [messageInput, setMessageInput] = useState(content)
   const [isEditing, setIsEditing] = useState(false)
   const [validationError, setValidationError] = useState('')
-
   const date = new Date(timestamp);
   const navigate = useNavigate()
 
@@ -60,7 +60,7 @@ function Message(props: IMessagesProps) {
         },      
         mode: 'cors'
       })
-      validateCreateDeleteMessage(response, navigate, setValidationError, null, ws)
+      validateCreateDeleteMessage(response, navigate, setValidationError, null, sendMessage)
     } catch (error: any) {
       setError(error) // Redirect to error page if there is a non-validation error.
     }
@@ -87,7 +87,7 @@ function Message(props: IMessagesProps) {
         },      
         mode: 'cors'
       })
-      validateMessageEdit(response, navigate, setValidationError, null, ws)
+      validateMessageEdit(response, navigate, setValidationError, null, sendMessage)
     } catch (error: any) {
       setError(error) // Redirect to error page if there is a non-validation error.
     }
@@ -103,11 +103,11 @@ function Message(props: IMessagesProps) {
           {`${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`}
         </div>
         <div>
-          {isEditing ? <input type='text' onChange={(e) => setMessageInput(e.target.value)} value={messageInput}/> : content}
+          {isEditing ? <input type='text' onChange={(e) => setMessageInput(e.target.value)} value={messageInput}/> : parseDom(content)}
         </div>
       </div>
       {
-        ((currentUser?._id === username._id) || currentUser?.isAdmin) &&
+        ((currentUser._id && currentUser._id === username?._id) || currentUser?.isAdmin) &&
         <div>
           {((currentUser?._id === username._id) && (isEditing ? <button onClick={() => setIsEditing(!isEditing)}>Cancel</button> : <button onClick={() => setIsEditing(!isEditing)}>Edit</button>))}
           {isEditing ? <button onClick={sendEdit}>save</button> : <button onClick={deleteMessage}>Delete</button>}
