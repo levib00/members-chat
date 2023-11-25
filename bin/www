@@ -8,6 +8,9 @@ const http = require('http');
 const debug = require('debug')('members-chat:server');
 const webSocket = require('ws');
 const app = require('../dist/src/app');
+const jwt = require('jsonwebtoken')
+require('dotenv').config()
+const User = require('../models/users')
 
 /**
  * Normalize a port into a number, string, or false.
@@ -40,15 +43,42 @@ app.set('port', port);
 
 const server = http.createServer(app);
 
+let wsClients = {}
+
 const wss = new webSocket.Server({ server });
 wss.on('connection', (ws, req) => {
-  // TODO: find a way to only send messages per chatroom and auth
+  const baseURL =  `${req.protocol}://${req.headers.host}/`;
+  const url = new URL(req.url, baseURL)
+
+  const params = url.searchParams;
+
+  const token = params.get("token");
+  const chatroomId = params.get("chatroomId");
+  let userId
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      ws.close();
+    } else {
+      wsClients[`${token}`] = {chatroomId, ...ws};
+      ws.chatroomId = chatroomId
+      userId = user._id;
+    }
+  });
+  
   ws.on('message', (data) => {
     wss.clients.forEach(function each(client) {
-      // TODO: decide if vv i want to send data that user sent back to themselves.
-      if (/*client !== ws &&*/ client.readyState === wss.options.WebSocket.OPEN) {
-        client.send(`${data}`);
-      }
+      jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) {
+            client.send("Error: Your token is no longer valid. Please reauthenticate.");
+            client.close();
+        } else {
+          const isInServer = client.chatroomId === chatroomId
+          if (client !== ws && (client.readyState === wss.options.WebSocket.OPEN) && isInServer) {
+            client.send(`${data}`);
+          }
+        }
+      });
     })
   })
   console.log('connected');
