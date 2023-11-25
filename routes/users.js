@@ -24,8 +24,9 @@ router.put('/:userId', verifyToken, usersController.makeUserAdmin);
 router.post('/log-in', passport.authenticate('local', {
   failureMessage: true,
 }), (req, res) => {
-  console.log(req.user)
-  jwt.sign(req.user.toJSON(), process.env.JWT_SECRET, (err, token) => {
+  
+  const {password, ...rest} = req.user._doc
+  jwt.sign(rest, process.env.JWT_SECRET, (err, token) => {
 
     if (err) {
       return res.status(500).json({error: 'Something went wrong', err});
