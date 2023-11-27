@@ -11,12 +11,12 @@ import Error from "./components/error.js";
 import React, { useState } from "react";
 
 export interface IErrorObject {
-    status: number,
-    info: string
-};
+  status: number,
+  info: string
+}
 
-const  App = () => {
-  const [error, setError] = useState<IErrorObject>({} as IErrorObject)
+const App = () => {
+  const [error, setError] = useState<IErrorObject | undefined>()
   const [hasAuth, setHasAuth] = useState<boolean>(!!localStorage.getItem('jwt'))
 
   return (
@@ -25,12 +25,13 @@ const  App = () => {
         <NavBar hasAuth={hasAuth} setHasAuth={setHasAuth} />
         <Routes>
           <Route path='/' element={<Home hasAuth={hasAuth} />} />
-          <Route path='/chatrooms' element={<ChatroomList setError={setError} />} />
+          <Route path='/chatrooms' element={<ChatroomList />} />
           <Route path='/chatrooms/:chatroomId' element={<Chatroom setError={setError} />} />
-          <Route path='/chatrooms/new' element={<CreateChat setError={setError} isAnEdit={false} chatroom={null}/>} />
-          <Route path='/log-in' element={<LogIn hasAuth={hasAuth} setError={setError} setHasAuth={setHasAuth} />} />
-          <Route path='/sign-up'  element={<SignUp hasAuth={hasAuth} setError={setError} setHasAuth={setHasAuth} /> } />
+          <Route path='/chatrooms/new' element={<CreateChat isAnEdit={false} chatroom={null}/>} />
+          <Route path='/log-in' element={<LogIn hasAuth={hasAuth} setHasAuth={setHasAuth} />} />
+          <Route path='/sign-up' element={<SignUp hasAuth={hasAuth} /> } />
           <Route path='/error' element={<Error error={error} />} />
+          <Route path='*' element={<Error error={error} />} />
         </Routes>
       </BrowserRouter>
     </>

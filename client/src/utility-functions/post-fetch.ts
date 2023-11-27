@@ -3,9 +3,9 @@ import { NavigateFunction } from "react-router-dom";
 import { IErrorObject } from "../App";
 import mongoose from "mongoose";
 
-type valFunctionArgs = (response: { [key: string]: any; }, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: any, sendMessage: ((message: string) => void)) => Promise<void>
+type valFunctionArgs = (response: { [key: string]: any; }, navigate: NavigateFunction, setValidationError: React.Dispatch<React.SetStateAction<string | string[]>>, setHasAuth: any, sendMessage: ((message: string) => void)) => Promise<void>
 
-export const validateCreateChat = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }) => {
+export const validateCreateChat = async(response: { [key: string]: any; }, navigate: NavigateFunction, setValidationError: React.Dispatch<React.SetStateAction<string | string[]>>) => {
   if (response.status === 200) {
     navigate('/chatrooms') // Redirect if user successfully logged in.
     return response.status
@@ -16,7 +16,7 @@ export const validateCreateChat = async(response: {[key: string]: any}, navigate
   }
 } //TODO: maybe collapse these into DI function
 
-export const validateMessageEdit = async(response: { [key: string]: any; }, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: null, sendMessage: (message: string) => void) => {
+export const validateMessageEdit = async(response: { [key: string]: any; }, navigate: NavigateFunction, setValidationError: React.Dispatch<React.SetStateAction<string | string[]>>, setHasAuth: null, sendMessage: (message: string) => void) => {
   const jsonResponse: any = await response.json()
   if (response.status === 200) {    
     const stringifiedResponse = JSON.stringify(jsonResponse)
@@ -27,11 +27,10 @@ export const validateMessageEdit = async(response: { [key: string]: any; }, navi
   return jsonResponse
 }
 
-export const validateCreateDeleteMessage = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: null, sendMessage: (message: string) => void) => {
+export const validateCreateDeleteMessage = async(response: { [key: string]: any; }, navigate: NavigateFunction, setValidationError: React.Dispatch<React.SetStateAction<string | string[]>>, setHasAuth: null, sendMessage: (message: string) => void) => {
   const jsonResponse: any = await response.json()
   if (response.status === 200) {
     const stringifiedResponse = JSON.stringify(await jsonResponse)
-    console.log(sendMessage)
     sendMessage(stringifiedResponse);
     
   } else {
@@ -40,7 +39,7 @@ export const validateCreateDeleteMessage = async(response: {[key: string]: any},
   return await jsonResponse
 }
 
-export const validateJoinChatroom = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: any) => {
+export const validateJoinChatroom = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: React.Dispatch<React.SetStateAction<string | string[]>>, setHasAuth: any) => {
   const jsonResponse = await response.json()
   if (response.status === 200) {
     localStorage.setItem('jwt', await jsonResponse.token)
@@ -52,7 +51,7 @@ export const validateJoinChatroom = async(response: {[key: string]: any}, naviga
   }
 }
 
-export const validateSignUp = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: any) => {
+export const validateSignUp = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: React.Dispatch<React.SetStateAction<string | string[]>>, setHasAuth: any) => {
   if (response.status === 200) {
     navigate('/')
     return response.status
@@ -66,7 +65,7 @@ export const validateSignUp = async(response: {[key: string]: any}, navigate: Na
   }
 }
 
-export const validateLogIn = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: any,) => {
+export const validateLogIn = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: React.Dispatch<React.SetStateAction<string | string[]>>, setHasAuth: any,) => {
   if (response.status === 200) {
     const tokenObject = await response.json()
     localStorage.setItem('jwt', await tokenObject.token)
@@ -83,7 +82,7 @@ export const validateLogIn = async(response: {[key: string]: any}, navigate: Nav
   }
 }
 
-export const validateLeaveChatroom = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, setHasAuth: any) => {
+export const validateLeaveChatroom = async(response: {[key: string]: any}, navigate: NavigateFunction, setValidationError: React.Dispatch<React.SetStateAction<string | string[]>>, setHasAuth: any) => {
   if (response.status === 200) {
     const tokenObject = await response.json()
     localStorage.setItem('jwt', await tokenObject.token)
@@ -101,8 +100,7 @@ export const submitPost = async(
  body: { [key: string]: string | boolean | mongoose.Types.ObjectId }, 
  e: { preventDefault: () => void; },
  validationFunction: valFunctionArgs,
- setError: { (value: SetStateAction<IErrorObject>): void; (arg0: any): void; }, 
- setValidationError: { (value: SetStateAction<string>): void; (arg0: string): void; }, 
+ setValidationError: React.Dispatch<React.SetStateAction<string | string[]>>, 
  navigate: NavigateFunction,
  setHasAuth: any,
  sendMessage: ((message: string) => void),
@@ -130,7 +128,7 @@ export const submitPost = async(
     })
     return validationFunction(response, navigate, setValidationError, setHasAuth, sendMessage)
   } catch (error: any) {
-    setError(error) // Redirect to error page if there is a non-validation error.
+    setValidationError(error)
     return error
   }
 };
