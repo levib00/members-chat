@@ -1,0 +1,15 @@
+{
+  // extend your base config so you don't have to redefine your compilerOptions
+  "extends": "./tsconfig.json",
+  "include": [
+    "./*.test.ts",
+    "./*.ts",
+    "./*.test.tsx",
+    "./*.tsx",
+    // etc
+
+    // if you have a mixed JS/TS codebase, don't forget to include your JS files
+    "./.eslintrc.js"
+  ]
+  
+}
