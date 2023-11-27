@@ -4,7 +4,6 @@ import { getFetcher } from "../utility-functions/fetcher"
 import useSWR from "swr"
 import { v4 as uuid } from "uuid"
 import { Link } from "react-router-dom"
-import { IErrorObject } from "../App"
 
 interface IChatroomInfo {
   roomName: string,
@@ -13,12 +12,7 @@ interface IChatroomInfo {
   _id: string
 }
 
-interface IChatroomListProps {
-  setError: React.Dispatch<React.SetStateAction<IErrorObject>>
-}
-
-const ChatroomList = (props: IChatroomListProps) => {
-  const { setError } = props
+const ChatroomList = () => {
 
   const {data: user,  error: userError} = useSWR(`http://localhost:3000/users/user`, getFetcher)
 
@@ -27,7 +21,7 @@ const ChatroomList = (props: IChatroomListProps) => {
   return (
     <>
       <Link to='/chatrooms/new'><button>Create a new chatroom</button></Link>
-      {user && chatrooms?.map((chatroom: IChatroomInfo) => <ChatroomCard key={uuid()} chatroomInfo={chatroom} setError={setError} hasUser={(user?.chatrooms.includes(chatroom._id) || user?.isAdmin)} />)}
+      {user && chatrooms?.map((chatroom: IChatroomInfo) => <ChatroomCard key={uuid()} chatroomInfo={chatroom} hasUser={(user?.chatrooms.includes(chatroom._id) || user?.isAdmin)} />)}
     </>
   )
 }
