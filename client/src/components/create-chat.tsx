@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { IErrorObject } from "../App";
 import { validateCreateChat, submitPost } from "../utility-functions/post-fetch";
+import { v4 as uuid } from "uuid";
 
 interface ICreateChatProps {
-  setError: React.Dispatch<React.SetStateAction<IErrorObject>>,
   isAnEdit: boolean,
   chatroom: {
     roomName: string,
@@ -14,11 +13,11 @@ interface ICreateChatProps {
 
 const CreateChat = (props: ICreateChatProps) => {
 
-  const {setError, isAnEdit, chatroom} = props
+  const { isAnEdit, chatroom} = props
   const [chatNameInput, setChatNameInput] = useState(chatroom?.roomName || '');
   const [passwordInput, setPasswordInput] = useState('');
   const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
-  const [validationError, setValidationError] = useState('')
+  const [validationError, setValidationError] = useState<string | Array<string>>('')
   const [isTheSame] = useState(passwordInput === confirmPasswordInput)
   const [isPublic, setIsPublic] = useState(chatroom?.isPublic || false)
   const navigate = useNavigate();
@@ -51,7 +50,7 @@ const CreateChat = (props: ICreateChatProps) => {
           })
           validateCreateChat(response, navigate, setValidationError)
         } catch (error: any) {
-          setError(error) // Redirect to error page if there is a non-validation error.
+          setValidationError(error) // Redirect to error page if there is a non-validation error.
         }
       } else {
         submitPost(
@@ -59,7 +58,6 @@ const CreateChat = (props: ICreateChatProps) => {
           {roomName: chatNameInput, password: passwordInput, passwordConfirmation: confirmPasswordInput, isPublic},
           e,
           validateCreateChat, 
-          setError, 
           setValidationError, 
           navigate, 
           null,
@@ -71,11 +69,11 @@ const CreateChat = (props: ICreateChatProps) => {
     }
   }
 
-  return (
+  return ( // TODO: fix radio button on edit. disable password inputs when its unchecked.
     <form>
       <div>
         <label htmlFor='chat-name'>Chat Name:</label>
-        <input type='text' id='chat-name' onChange={(e) => setChatNameInput(e.target.value)} value={chatNameInput}></input>
+        <input type='text' id='chat-name' required onChange={(e) => setChatNameInput(e.target.value)} value={chatNameInput}></input>
       </div>
       <div>
         <label htmlFor='password'>Password:</label>
@@ -93,7 +91,12 @@ const CreateChat = (props: ICreateChatProps) => {
       {
         validationError &&
         <ul>
-          <li>{validationError}</li>
+          {
+            Array.isArray(validationError) ? 
+              validationError.map((error: string) => <li key={uuid()}>{error}</li>)
+              :
+              <li key={uuid()}>{validationError}</li>
+          }
         </ul>
       }
     </form>
