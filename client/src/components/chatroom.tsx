@@ -3,13 +3,13 @@ import { getFetcher } from "../utility-functions/fetcher";
 import { submitPost, validateLeaveChatroom } from '../utility-functions/post-fetch';
 import { validateCreateDeleteMessage } from "../utility-functions/post-fetch";
 import Message from "./message";
+import { IErrorObject } from "../App";
 import useSWR from "swr";
 import { useNavigate, useParams } from "react-router-dom";
-import { IErrorObject } from "../App";
 import CreateChat from "./create-chat";
 import { v4 as uuid } from "uuid";
 import mongoose from "mongoose";
-import useWebSocket, { ReadyState } from 'react-use-websocket';
+import useWebSocket from 'react-use-websocket';
 
 interface IMessageObject {
   username: {
@@ -24,7 +24,7 @@ interface IMessageObject {
 };
 
 interface IChatroomProps {
-  setError: React.Dispatch<React.SetStateAction<IErrorObject>>,
+  setError: React.Dispatch<React.SetStateAction<IErrorObject | undefined>>,
 }
 
 const Chatroom = (props: IChatroomProps) => {
@@ -34,8 +34,10 @@ const Chatroom = (props: IChatroomProps) => {
   
   const [messageInput, setMessageInput] = useState('')
   const [modalIsOpen, setModalIsOpen] = useState(false)
-  const [validationError, setValidationError] = useState('')
-  const [leavingError, setLeavingError] = useState('')
+  const [validationError, setValidationError] = useState<string | Array<string>>('')
+  const [leavingError, setLeavingError] = useState<string | string[]>('')
+  const [isEdits, setIsEdits] = useState<null | number>(null)
+
   const [jwt] = useState(localStorage.getItem('jwt'))
   const { sendMessage, lastJsonMessage, readyState } = useWebSocket(`ws://localhost:3000/ws?token=${jwt}&chatroomId=${chatroomId}`, {
     //Will attempt to reconnect on all close events, such as server shutting down
@@ -59,7 +61,6 @@ const Chatroom = (props: IChatroomProps) => {
       {content: messageInput, _id: objectId}, 
       e,
       validateCreateDeleteMessage,
-      setError, 
       setValidationError, 
       navigate,
       null,
@@ -67,7 +68,8 @@ const Chatroom = (props: IChatroomProps) => {
     )
     
     if (await jsonResponse.error) {
-      // TODO: put notification that message couldn't be sent on screen.
+      handleNewWsMessage({_id: objectId})
+      setValidationError('Message could not be sent')
     }
   };
 
@@ -79,7 +81,6 @@ const Chatroom = (props: IChatroomProps) => {
       {content: messageInput}, 
       e,
       validateLeaveChatroom,
-      setError, 
       setLeavingError, 
       navigate,
       null,
@@ -89,14 +90,14 @@ const Chatroom = (props: IChatroomProps) => {
 
   const handleNewWsMessage = (message: {[key: string]: any}| undefined) => {
     const objIndex = response?.messages?.findIndex(((obj: IMessageObject ) => obj._id === message?._id))
-    if (objIndex < 0) {
+    if (objIndex < 0) { // Add non-existing message to DOM.
       const newMessages = [...response.messages, message]
       mutate({ ...response, messages: newMessages}, { revalidate: false })
-    } else if (!message?.content) {
+    } else if (!message?.content) { // Remove from DOM.
       const newMessages = [...response.messages]
       newMessages.splice(objIndex, 1)
-      mutate({ ...response, messages: newMessages})
-    } else {
+      mutate({ ...response, messages: newMessages}, {revalidate: false})
+    } else { // Edit existing message.
       const newMessages = [...response.messages]
       newMessages[objIndex] = message
       mutate({ ...response, messages: newMessages})
@@ -109,11 +110,11 @@ const Chatroom = (props: IChatroomProps) => {
     }
   }, [lastJsonMessage])
   
-  return ( // TODO: add field validation on inputs through app.
+  return (
       <div>
         {modalIsOpen &&
           <div>
-            <CreateChat chatroom={response?.chatroom} setError={setError} isAnEdit={true} />
+            <CreateChat chatroom={response?.chatroom} isAnEdit={true} />
             <button onClick={() => setModalIsOpen(false)}>cancel</button>
           </div>}
         <div>
@@ -122,16 +123,21 @@ const Chatroom = (props: IChatroomProps) => {
           <button onClick={(e) => leaveChat(e)}>Leave chat</button>
           {leavingError ? leavingError : null}
         </div>
-        { response?.messages?.map((message: IMessageObject) => <Message key={(uuid())} setError={ setError } currentUser={ user } messageInfo={ message } sendMessage={ sendMessage } />) }
+        { response?.messages?.map((message: IMessageObject, index: number) => <Message key={(uuid())} index={index} toggle={() => setIsEdits(s => s === index ? null : index)} currentUser={ user } messageInfo={ message } sendMessage={ sendMessage } handleNewWsMessage={ handleNewWsMessage } isEdits={isEdits === index} />) }
         <div>
           <label htmlFor="message-box"></label>
-          <input id="message-box" type="text" onChange={(e) => setMessageInput(e.target.value)} value={messageInput} />
+          <input id="message-box" type="text" required min={1} max={300} onChange={(e) => setMessageInput(e.target.value)} value={messageInput} />
           <div>
             <button onClick={(e) =>handleSendMessage(e)}>Send</button>
             {
               validationError && 
-              <ul> {/* // TODO: allow for array. if isArray.map  */}
-                <li key={uuid()}>{validationError}</li>
+              <ul> 
+                { 
+                  Array.isArray(validationError) ? 
+                    validationError.map((error: string) => <li key={uuid()}>{error}</li>)
+                    :
+                    <li key={uuid()}>{validationError}</li>
+                }
               </ul>
             }
           </div>
