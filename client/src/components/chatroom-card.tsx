@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import {submitPost, validateJoinChatroom} from '../utility-functions/post-fetch'
-import { IErrorObject } from "../App"
+import { v4 as uuid } from "uuid";
 
 interface chatroomInfo {
   roomName: string,
@@ -12,17 +12,16 @@ interface chatroomInfo {
 
 interface ChatroomCardProps {
   chatroomInfo: chatroomInfo,
-  setError: React.Dispatch<React.SetStateAction<IErrorObject>>,
   hasUser: boolean,
 };
 
 const ChatroomCard = (props: ChatroomCardProps) => {
-  const { chatroomInfo, setError, hasUser } = props
+  const { chatroomInfo, hasUser } = props
   const { roomName, isPublic, _id } = chatroomInfo
 
 
   const [passwordInput, setPasswordInput] = useState('')
-  const [validationError, setValidationError] = useState('')
+  const [validationError, setValidationError] = useState<string | Array<string>>('')
   const [isJoining, setIsJoining] = useState(false);
 
   const navigate = useNavigate()
@@ -38,7 +37,6 @@ const ChatroomCard = (props: ChatroomCardProps) => {
         {password: passwordInput}, 
         e,
         validateJoinChatroom,
-        setError, 
         setValidationError, 
         navigate,
         null,
@@ -57,7 +55,17 @@ const ChatroomCard = (props: ChatroomCardProps) => {
       <div>{isPublic ? 'public' : 'private'}</div> 
       {isJoining ? <input type="password" onChange={(e) => setPasswordInput(e.target.value)} value={passwordInput}/> : null}
       <button onClick={(e) => clickJoin(e)}>{hasUser ? 'Chat' : 'Join'}</button>
-      { validationError && <ul><li>{validationError}</li></ul> }
+      {
+        validationError && 
+        <ul> 
+          { 
+            Array.isArray(validationError) ? 
+              validationError.map((error: string) => <li key={uuid()}>{error}</li>)
+              :
+              <li key={uuid()}>{validationError}</li>
+          }
+        </ul>
+      }
     </div>
   )
 }
