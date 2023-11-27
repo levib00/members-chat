@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { validateCreateDeleteMessage, validateMessageEdit } from "../utility-functions/post-fetch";
 import { useNavigate } from "react-router-dom";
-import { IErrorObject } from "../App";
 import parseDom from "../utility-functions/dom-parser";
-
+import { v4 as uuid } from "uuid";
 
 interface IMessageInfo {
   username: {
@@ -26,21 +25,24 @@ interface IUserObject {
 interface IMessagesProps {
   currentUser: IUserObject,
   messageInfo: IMessageInfo,
-  setError: React.Dispatch<React.SetStateAction<IErrorObject>>,
-  sendMessage: (message: string) => void
+  sendMessage: (message: string) => void,
+  handleNewWsMessage: (message: { [key: string]: any; } | undefined) => void
+  isEdits: boolean,
+  index: number,
+  toggle: () => void
 };
 
 function Message(props: IMessagesProps) {
-  const {messageInfo, currentUser, setError, sendMessage} = props;
+  const {messageInfo, currentUser, sendMessage, handleNewWsMessage, isEdits, index, toggle} = props;
   const {username, timestamp, content, _id} = messageInfo;
 
-  const [messageInput, setMessageInput] = useState(content)
-  const [isEditing, setIsEditing] = useState(false)
-  const [validationError, setValidationError] = useState('')
+  const [messageInput, setMessageInput] = useState(() => parseDom(content))
+  const [validationError, setValidationError] = useState<string | Array<string>>('')
   const date = new Date(timestamp);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const deleteMessage = async() => {
+    handleNewWsMessage({_id: messageInfo._id})
     try {
       const response = await fetch(`http://localhost:3000/messages/delete/${_id}`, {
         method: 'DELETE',
@@ -61,8 +63,9 @@ function Message(props: IMessagesProps) {
         mode: 'cors'
       })
       validateCreateDeleteMessage(response, navigate, setValidationError, null, sendMessage)
-    } catch (error: any) {
-      setError(error) // Redirect to error page if there is a non-validation error.
+    } catch (error: any) { //
+      setValidationError(error) // Redirect to error page if there is a non-validation error.
+      handleNewWsMessage({ messageInfo })
     }
   }
 
@@ -89,7 +92,7 @@ function Message(props: IMessagesProps) {
       })
       validateMessageEdit(response, navigate, setValidationError, null, sendMessage)
     } catch (error: any) {
-      setError(error) // Redirect to error page if there is a non-validation error.
+      setValidationError(error) // Redirect to error page if there is a non-validation error.
     }
   }
 
@@ -97,23 +100,33 @@ function Message(props: IMessagesProps) {
     <div>
       <div>
         <div>
-          {username?.username}
+          {parseDom(username?.username)}
         </div>
         <div>
           {`${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`}
         </div>
         <div>
-          {isEditing ? <input type='text' onChange={(e) => setMessageInput(e.target.value)} value={messageInput}/> : parseDom(content)}
+          {isEdits ? <input type='text' onChange={(e) => setMessageInput(e.target.value)} value={messageInput}/> : parseDom(content)}
         </div>
       </div>
       {
-        ((currentUser._id && currentUser._id === username?._id) || currentUser?.isAdmin) &&
+        ((currentUser?._id && currentUser._id === username?._id) || currentUser?.isAdmin) &&
         <div>
-          {((currentUser?._id === username._id) && (isEditing ? <button onClick={() => setIsEditing(!isEditing)}>Cancel</button> : <button onClick={() => setIsEditing(!isEditing)}>Edit</button>))}
-          {isEditing ? <button onClick={sendEdit}>save</button> : <button onClick={deleteMessage}>Delete</button>}
+          {((currentUser?._id === username._id) && (isEdits ? <button onClick={toggle}>Cancel</button> : <button onClick={toggle}>Edit</button>))}
+          {isEdits ? <button onClick={sendEdit}>save</button> : <button onClick={deleteMessage}>Delete</button>}
         </div>
       }
-      <p>{validationError}</p>
+      {
+        validationError && 
+        <ul> 
+          { 
+            Array.isArray(validationError) ? 
+              validationError.map((error: string) => <li key={uuid()}>{error}</li>)
+              :
+              <li key={uuid()}>{validationError}</li>
+          }
+        </ul>
+      }
     </div>
   )
 };
