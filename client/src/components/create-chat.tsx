@@ -16,7 +16,7 @@ const CreateChat = (props: ICreateChatProps) => {
   const [chatNameInput, setChatNameInput] = useState(chatroom?.roomName || '');
   const [passwordInput, setPasswordInput] = useState('');
   const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
-  const [validationError, setValidationError] = useState<string | Array<string>>('');
+  const [validationError, setValidationError] = useState<string | string[]>('');
   const [isTheSame] = useState(passwordInput === confirmPasswordInput);
   const [isPublic, setIsPublic] = useState(chatroom?.isPublic || false);
   const navigate = useNavigate();
@@ -32,8 +32,8 @@ const CreateChat = (props: ICreateChatProps) => {
             method: 'PUT',
             body: JSON.stringify({
               roomName: chatNameInput,
-              password: passwordInput,
-              passwordConfirmation: confirmPasswordInput,
+              password: isPublic ? '' : passwordInput,
+              passwordConfirmation: isPublic ? '' : confirmPasswordInput,
             }),
             credentials: 'include',
             // @ts-ignore
@@ -77,7 +77,7 @@ const CreateChat = (props: ICreateChatProps) => {
     }
   };
 
-  return ( // TODO: fix radio button on edit. disable password inputs when its unchecked.
+  return (
     <form>
       <div>
         <label htmlFor='chat-name'>Chat Name:</label>
@@ -85,15 +85,15 @@ const CreateChat = (props: ICreateChatProps) => {
       </div>
       <div>
         <label htmlFor='password'>Password:</label>
-        <input type='password' id='password' onChange={(e) => setPasswordInput(e.target.value)} value={passwordInput}></input>
+        <input disabled={isPublic} type='password' id='password' onChange={(e) => setPasswordInput(e.target.value)} value={isPublic ? '' : passwordInput}></input>
       </div>
       <div>
         <label htmlFor='confirm-password'>Confirm password:</label>
-        <input type='password' id='confirm-password' onChange={(e) => setConfirmPasswordInput(e.target.value)} value={confirmPasswordInput}></input>
+        <input disabled={isPublic} type='password' id='confirm-password' onChange={(e) => setConfirmPasswordInput(e.target.value)} value={isPublic ? '' : confirmPasswordInput}></input>
       </div>
       <div>
         <label htmlFor="isPublic">Do you want this server to be public?</label>
-        <input id="isPublic" type="radio" onChange={(e) => setIsPublic(e.target.checked)} checked={isPublic} />
+        <input id="isPublic" type="checkbox" onChange={(e) => setIsPublic(e.target.checked)} checked={isPublic} />
       </div>
       <button onClick={(e) => submitForm(e)}>{isAnEdit ? 'Submit changes' : 'Create chat'}</button>
       {
