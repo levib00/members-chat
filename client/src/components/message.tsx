@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { validateCreateDeleteMessage, validateMessageEdit } from "../utility-functions/post-fetch";
-import { useNavigate } from "react-router-dom";
-import parseDom from "../utility-functions/dom-parser";
-import { v4 as uuid } from "uuid";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { v4 as uuid } from 'uuid';
+import { validateCreateDeleteMessage, validateMessageEdit } from '../utility-functions/post-fetch';
+import parseDom from '../utility-functions/dom-parser';
 
 interface IMessageInfo {
   username: {
-    _id: any, 
+    _id: any,
     firstName: string,
     lastName: string,
     username: string
@@ -14,7 +14,7 @@ interface IMessageInfo {
   timestamp: Date,
   content: string,
   _id: any
-};
+}
 
 interface IUserObject {
   _id: any,
@@ -30,71 +30,75 @@ interface IMessagesProps {
   isEdits: boolean,
   index: number,
   toggle: () => void
-};
+}
 
 function Message(props: IMessagesProps) {
-  const {messageInfo, currentUser, sendMessage, handleNewWsMessage, isEdits, index, toggle} = props;
-  const {username, timestamp, content, _id} = messageInfo;
+  const {
+    messageInfo, currentUser, sendMessage, handleNewWsMessage, isEdits, toggle,
+  } = props;
+  const {
+    username, timestamp, content, _id: id,
+  } = messageInfo;
 
-  const [messageInput, setMessageInput] = useState(() => parseDom(content))
-  const [validationError, setValidationError] = useState<string | Array<string>>('')
+  const [messageInput, setMessageInput] = useState(() => parseDom(content));
+  const [validationError, setValidationError] = useState<string | Array<string>>('');
   const date = new Date(timestamp);
   const navigate = useNavigate();
 
-  const deleteMessage = async() => {
-    handleNewWsMessage({_id: messageInfo._id})
+  const deleteMessage = async () => {
+    handleNewWsMessage({ _id: messageInfo._id });
     try {
-      const response = await fetch(`http://localhost:3000/messages/delete/${_id}`, {
+      const response = await fetch(`http://localhost:3000/messages/delete/${id}`, {
         method: 'DELETE',
         credentials: 'include',
-        //@ts-ignore
+        // @ts-ignore
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': 'http://localhost:5173',
           Authorization: (() => {
             const token = localStorage.getItem('jwt');
             if (token) {
-              return 'Bearer ' + token
+              return `Bearer ${token}`;
             }
-            return null
-          })()
-        },      
-        mode: 'cors'
-      })
-      validateCreateDeleteMessage(response, navigate, setValidationError, null, sendMessage)
+            return null;
+          })(),
+        },
+        mode: 'cors',
+      });
+      validateCreateDeleteMessage(response, navigate, setValidationError, null, sendMessage);
     } catch (error: any) { //
-      setValidationError(error) // Redirect to error page if there is a non-validation error.
-      handleNewWsMessage({ messageInfo })
+      setValidationError(error); // Redirect to error page if there is a non-validation error.
+      handleNewWsMessage({ messageInfo });
     }
-  }
+  };
 
-  const sendEdit = async() => {
+  const sendEdit = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/messages/edit/${_id}`, {
+      const response = await fetch(`http://localhost:3000/messages/edit/${id}`, {
         method: 'PUT',
-        body: JSON.stringify({content: messageInput}),
+        body: JSON.stringify({ content: messageInput }),
         credentials: 'include',
-        //@ts-ignore
+        // @ts-ignore
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': 'http://localhost:5173',
           Authorization: (() => {
             const token = localStorage.getItem('jwt');
             if (token) {
-              return 'Bearer ' + token
+              return `Bearer ${token}`;
             }
-            return null
-          })()
-        },      
-        mode: 'cors'
-      })
-      validateMessageEdit(response, navigate, setValidationError, null, sendMessage)
+            return null;
+          })(),
+        },
+        mode: 'cors',
+      });
+      validateMessageEdit(response, navigate, setValidationError, null, sendMessage);
     } catch (error: any) {
-      setValidationError(error) // Redirect to error page if there is a non-validation error.
+      setValidationError(error); // Redirect to error page if there is a non-validation error.
     }
-  }
+  };
 
   return (
     <div>
@@ -110,25 +114,33 @@ function Message(props: IMessagesProps) {
         </div>
       </div>
       {
-        ((currentUser?._id && currentUser._id === username?._id) || currentUser?.isAdmin) &&
-        <div>
-          {((currentUser?._id === username._id) && (isEdits ? <button onClick={toggle}>Cancel</button> : <button onClick={toggle}>Edit</button>))}
-          {isEdits ? <button onClick={sendEdit}>save</button> : <button onClick={deleteMessage}>Delete</button>}
+        ((currentUser?._id && currentUser._id === username?._id) || currentUser?.isAdmin)
+        && <div>
+          {((currentUser?._id === username._id) && (
+            isEdits
+              ? <button onClick={toggle}>Cancel</button> : <button onClick={toggle}>Edit</button>
+          ))}
+          {isEdits
+            ? <button onClick={sendEdit}>
+                save
+              </button> : <button onClick={deleteMessage}>
+                Delete
+              </button>}
         </div>
       }
+
       {
-        validationError && 
-        <ul> 
-          { 
-            Array.isArray(validationError) ? 
-              validationError.map((error: string) => <li key={uuid()}>{error}</li>)
-              :
-              <li key={uuid()}>{validationError}</li>
+        validationError
+        && <ul>
+          {
+            Array.isArray(validationError)
+              ? validationError.map((error: string) => <li key={uuid()}>{error}</li>)
+              : <li key={uuid()}>{validationError}</li>
           }
         </ul>
       }
     </div>
-  )
-};
+  );
+}
 
-export default Message
+export default Message;

@@ -1,45 +1,46 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { validateSignUp, submitPost } from "../utility-functions/post-fetch";
-import { v4 as uuid } from "uuid";
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { v4 as uuid } from 'uuid';
+import { validateSignUp, submitPost } from '../utility-functions/post-fetch';
 
 interface ISignUpProps {
   hasAuth: boolean,
 }
 
 const SignUp = (props: ISignUpProps) => {
-  const {hasAuth} = props
+  const { hasAuth } = props;
   const [firstNameInput, setFirstNameInput] = useState('');
   const [lastNameInput, setLastNameInput] = useState('');
   const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
-  const [validationError, setValidationError] = useState<string | Array<string>>('')
+  const [validationError, setValidationError] = useState<string | Array<string>>('');
   const navigate = useNavigate();
 
   useEffect(() => { // Redirect if user is already logged in.
     if (hasAuth) {
-      navigate('/')
+      navigate('/');
     }
-  })
+  });
 
   const signUp = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     submitPost(
-      'http://localhost:3000/users/sign-up', 
+      'http://localhost:3000/users/sign-up',
       {
-        firstName: firstNameInput, 
-        lastName: lastNameInput, 
-        username: usernameInput, 
-        password: passwordInput, 
-        passwordConfirmation: confirmPasswordInput
-      }, 
-      e, 
+        firstName: firstNameInput,
+        lastName: lastNameInput,
+        username: usernameInput,
+        password: passwordInput,
+        passwordConfirmation: confirmPasswordInput,
+      },
+      e,
       validateSignUp,
-      setValidationError, 
-      navigate, 
-      null, 
-      () => null)
-  }
+      setValidationError,
+      navigate,
+      null,
+      () => null,
+    );
+  };
 
   return (
     <>
@@ -66,20 +67,19 @@ const SignUp = (props: ISignUpProps) => {
         </div>
         <button onClick={(e) => signUp(e)}>Sign up</button>
         {
-          validationError && 
-          <ul> 
-            { 
-              Array.isArray(validationError) ? 
-                validationError.map((error: string) => <li key={uuid()}>{error}</li>)
-                :
-                <li key={uuid()}>{validationError}</li>
+          validationError
+          && <ul>
+            {
+              Array.isArray(validationError)
+                ? validationError.map((error: string) => <li key={uuid()}>{error}</li>)
+                : <li key={uuid()}>{validationError}</li>
             }
           </ul>
         }
       </form>
       <Link to='/' ><button>Already have an account?</button></Link>
     </>
-  )
-}
+  );
+};
 
-export default SignUp
+export default SignUp;
