@@ -40,7 +40,10 @@ exports.selfGet = asyncHandler(async (req, res, next) => {
       res.json(err);
     } else {
       const currentUser = await User.findById(user._id)
-      .select('-password');
+        .select('-password');
+      if (!currentUser) {
+        return res.status(404)
+      }
       res.json(currentUser);
     }// show different information depending on whether or not user is a member.
   });
@@ -55,6 +58,9 @@ exports.userGet = asyncHandler(async (req, res, next) => {
       res.send(err);
     }
     const currentUser = await User.findById(user._id)
+    if (!currentUser) {
+      return res.status(404)
+    }
     if (!currentUser.isAdmin) {
       const user = await User.findById(user._id)
         .select('-password')
@@ -88,11 +94,14 @@ exports.userJoinChatroom = [
         res.status(403).json({ error: 'Forbidden' });
       } else {
         const chatroom = await Chatroom.findById(req.params.chatroomId);
+        if (!currentUser || !chatroom) {
+          return res.status(404)
+        }
         if (currentUser.chatrooms.includes(chatroom._id)) {
           res.status(403).json(user.chatrooms);
         } else {
           const match = bcrypt.compare(req.body.password, chatroom.password);
-          if (!await match && !currentUser.isAdmin) {
+          if (!await match && !currentUser.isAdmin && !chatroom.isPublic) {
             return res.status(401).json({ error: 'Incorrect password' });
           } else {
             const userChatrooms = [...currentUser.chatrooms, chatroom];
@@ -106,7 +115,15 @@ exports.userJoinChatroom = [
             });
 
             await User.findByIdAndUpdate(user._id, newUser, {});
-            res.json(currentUser.chatrooms);
+            const {password, ...rest} = newUser._doc
+            const updatedUser = await {firstName: user.firstName, lastName: user.lastName, ...rest}
+            jwt.sign(updatedUser, process.env.JWT_SECRET, (err, token) => {
+
+              if (err) {
+                return res.status(500).json({error: 'Something went wrong', err});
+              }
+              return res.send({ token, chatroomId: req.params.chatroomId });
+            });
           }
         }
       }
@@ -120,6 +137,9 @@ exports.userLeaveChatroom = asyncHandler(async (req, res, next) => {
   }
   jwt.verify(req.token, process.env.JWT_SECRET, async (err, user) => {
     const currentUser = await User.findById(user._id)
+    if (!currentUser) {
+      return res.status(404)
+    }
     if (err) {
       res.status(403).json({ error: 'Forbidden' });
     } else {     
@@ -137,8 +157,16 @@ exports.userLeaveChatroom = asyncHandler(async (req, res, next) => {
           _id: currentUser._id,
         });
 
-        await User.findByIdAndUpdate(thisUser._id, newUser, {});
-        res.json(currentUser.chatrooms);
+        await User.findByIdAndUpdate(user._id, newUser, {});
+        const {password, ...rest} = newUser._doc
+        const updatedUser = {firstName: user.firstName, lastName: user.lastName, ...rest}
+        jwt.sign(updatedUser, process.env.JWT_SECRET, (err, token) => {
+
+          if (err) {
+            return res.status(500).json({error: 'Something went wrong', err});
+          }
+          return res.send({ token });
+        });
       }
     }
   });

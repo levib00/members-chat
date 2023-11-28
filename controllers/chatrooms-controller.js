@@ -7,13 +7,19 @@ const User = require('../models/users');
 
 exports.allChatroomsGet = asyncHandler(async (req, res, next) => {
   const chatrooms = await Chatroom.find()
-  .select('-password');
+    .select('-password');
+  if (!chatrooms) {
+    return res.status(404)
+  }
   res.json(chatrooms);
 });
 
 exports.oneChatroomGet = asyncHandler(async (req, res, next) => {
   const chatroom = await Chatroom.findById(req.params.chatroomId)
   .select('-password');
+  if (!chatroom) {
+    return res.status(404)
+  }
   res.json(chatroom);
 });
 
@@ -85,6 +91,9 @@ exports.deleteChatroom = asyncHandler(async (req, res, next) => {
     }
     const chatroom = await Chatroom.findById(req.params.chatroomId);
 
+    if (!chatroom) {
+      return res.status(404).json('That message was not found.')
+    }
     if ((chatroom.createdBy._id === user._id) || user.isAdmin) {
       // Data from form is valid. Save message.
       await Chatroom.findByIdAndRemove(req.params.messageId);
@@ -125,6 +134,7 @@ exports.editChatroom = [
       if (jwtErr) {
         res.status(403);
       }
+      
       bcrypt.hash(req.body.password, 10, async (bcryptErr, hashedPassword) => {
         if (bcryptErr) {
           res.status(403);
@@ -134,6 +144,10 @@ exports.editChatroom = [
         const oldChatroom =  await Chatroom.findById(req.params.chatroomId)
           .populate('createdBy')
           .exec();
+        
+        if (!oldChatroom) {
+          return res.status(404)
+        }
 
         if (oldChatroom.createdBy._id.equals(userObject._id) || userObject.isAdmin) {
           const newChatroom =  new Chatroom({

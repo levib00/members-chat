@@ -4,7 +4,11 @@ const jwt = require('jsonwebtoken');
 const Message = require('../models/messages');
 const Chatroom = require('../models/chatroom');
 const User = require('../models/users');
+const { json } = require('stream/consumers');
+const ObjectId = require('mongoose').Types.ObjectId;
 require('dotenv').config();
+
+// TODO: add handling on deletes for item not found
 
 exports.messagesGet = asyncHandler(async (req, res, next) => {
   if (req.token === null) {
@@ -16,6 +20,9 @@ exports.messagesGet = asyncHandler(async (req, res, next) => {
     } 
     const chatroom = await Chatroom.findById(req.params.chatroomId);
     const currentUser = await User.findById(user._id);
+    if (!currentUser || !chatroom) {
+      return res.status(404).json('That chatroom does not exist. please ensure the url you typed is correct.')
+    }
     if (currentUser.chatrooms.includes(chatroom._id) || currentUser.isAdmin) {
       const messages = await Message.find({ roomId: req.params.chatroomId })
         .populate('username')
@@ -37,6 +44,9 @@ exports.oneMessageGet = asyncHandler(async (req, res, next) => {
       }
       const currentUser = await User.findById(user._id);
       const message = await Message.findById(req.params.messageId);
+      if (!message) {
+        return res.status(404)
+      }
       if (currentUser.isAdmin) {
         res.json({
           message,
@@ -60,7 +70,7 @@ exports.userMessagesGet = asyncHandler(async (req, res, next) => {
     }
     const message = await Message.find({ username: req.params.userId }); 
     if (user.isAdmin) {
-      res.json({ message });
+      res.json(message);
     } else if (req.params.userId === user._id) {
       res.json(message);
     } else {
@@ -82,10 +92,13 @@ exports.messageDelete = asyncHandler(async (req, res, next) => {
     .populate('username')
     .exec();
 
-    if ((oldMessage.username._id.equals(user._id)) || currentUser.isAdmin) {
+    if (!oldMessage) {
+      return res.status(404);
+    }
+    if ((oldMessage?.username._id.equals(user._id)) || currentUser.isAdmin) {
       // Data from form is valid. Save message.
       await Message.findByIdAndRemove(req.params.messageId);
-      res.json({ message: 'message deleted' });
+      res.json({ _id: oldMessage._id, message: 'message was deleted.'});
     } else {
       res.status(403).json({ error: 'You need to be the user who sent the message you are trying to delete.' });
     }
@@ -115,6 +128,10 @@ exports.messageEdit = [
       const oldMessage = await Message.findById(req.params.messageId)
         .populate('username')
         .exec();
+        
+      if (!oldMessage) {
+        return res.status(404)
+      }
 
       if (oldMessage.username._id.equals(user._id)) { 
         const newMessage = new Message({
@@ -147,16 +164,35 @@ exports.messagePost = [
   body('content', 'Message must not be empty.')
     .trim()
     .isLength({ max: 300 })
-    .withMessage('message must be less than 300 characters long.')
+    .withMessage('Message must be less than 300 characters long.')
+    .isLength({ min: 1 })
+    .withMessage('Message must be more than 1 character long.')
     .escape(),
+  body('_id'),
 
   // Process request after validation and sanitization.
 
   asyncHandler(async (req, res, next) => {
+    function isObjectIdValid(id) {
+      if (ObjectId.isValid(id)) {
+        if (String(new ObjectId(id)) === id) {
+          return true
+        } else {
+          return false
+        }
+      } else {
+        return false
+      }
+    }
     // Extract the validation errors from a request.
     if (req.token === null) {
       return res.status(403).json({ error: 'You are not signed in.' });
-    }
+    };
+    if (req.body._id) {
+      if (!isObjectIdValid(req.body._id)) {
+        return res.status(400).json({ error: 'Something went wrong. Invalid ObjectId.' });
+      }
+    };
     jwt.verify(req.token, process.env.JWT_SECRET, async (err, user) => {
       if (err) {
         res.status(403);
@@ -165,16 +201,17 @@ exports.messagePost = [
 
       const chatroom = await Chatroom.findById(req.params.chatroomId);
       const userObject = await User.findById(user._id)
-
+      
       const message = new Message({
         content: req.body.content,
         username: userObject,
         timestamp: Date.now(),
         roomId: chatroom,
+        _id: req.body._id || new ObjectId()
       });
-      if (!errors.isEmpty()) {
+      if (!errors.isEmpty()) { // TODO: change errors to error in these functions. also maybe make it a helper.
         res.status(400).json({
-          errors: errors.array(),
+          error: errors.array(),
           message,
         });
         // Data from form is valid. Save message.
