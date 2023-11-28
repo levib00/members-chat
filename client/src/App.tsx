@@ -1,14 +1,14 @@
-import { Routes, Route, BrowserRouter } from "react-router-dom";
-import NavBar from './components/nav.js'
-import Home from "./components/home.js";
-import SignUp from "./components/sign-up.js";
-import './App.css'
-import ChatroomList from "./components/chat-list.js";
-import Chatroom from "./components/chatroom.js";
-import CreateChat from "./components/create-chat.js";
-import LogIn from "./components/log-in.js";
-import Error from "./components/error.js";
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
+import NavBar from './components/nav.js';
+import Home from './components/home.js';
+import SignUp from './components/sign-up.js';
+import './App.css';
+import ChatroomList from './components/chat-list.js';
+import Chatroom from './components/chatroom.js';
+import CreateChat from './components/create-chat.js';
+import LogIn from './components/log-in.js';
+import Error from './components/error.js';
 
 export interface IErrorObject {
   status: number,
@@ -16,8 +16,8 @@ export interface IErrorObject {
 }
 
 const App = () => {
-  const [error, setError] = useState<IErrorObject | undefined>()
-  const [hasAuth, setHasAuth] = useState<boolean>(!!localStorage.getItem('jwt'))
+  const [error, setError] = useState<IErrorObject | undefined>();
+  const [hasAuth, setHasAuth] = useState<boolean>(!!localStorage.getItem('jwt'));
 
   return (
     <>
@@ -35,7 +35,7 @@ const App = () => {
         </Routes>
       </BrowserRouter>
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;
