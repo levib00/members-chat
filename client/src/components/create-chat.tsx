@@ -34,6 +34,7 @@ const CreateChat = (props: ICreateChatProps) => {
               roomName: chatNameInput,
               password: isPublic ? '' : passwordInput,
               passwordConfirmation: isPublic ? '' : confirmPasswordInput,
+              isPublic,
             }),
             credentials: 'include',
             // @ts-ignore
