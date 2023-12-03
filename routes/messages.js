@@ -2,7 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 const messagesController = require('../controllers/messages-controller');
-const verifyToken = require('../middleware/verifyToken');
+const verifyToken = require('../middleware/verify-token');
 
 router.get('/', verifyToken, messagesController.messagesGet);
 

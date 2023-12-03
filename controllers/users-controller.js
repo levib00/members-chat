@@ -6,73 +6,88 @@ const User = require('../models/users');
 const Chatroom = require('../models/chatroom');
 require('dotenv').config();
 
-// Display snack create form on GET.
+const createNewUserObject = (currentUser, updateFields) => {
+  const {
+    firstName,
+    lastName,
+    username,
+    password,
+    chatrooms,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    _id,
+  } = currentUser;
+
+  const newUser = new User({
+    firstName,
+    lastName,
+    username,
+    password,
+    chatrooms,
+    ...updateFields,
+    _id,
+  });
+  return newUser;
+};
+
+const formatUserObject = (newUser) => {
+  const { password, ...rest } = newUser;
+  return {
+    firstName: newUser.firstName,
+    lastName: newUser.lastName,
+    ...rest,
+  };
+};
+
+const jwtSign = (newUser, res) => {
+  const userObject = formatUserObject(newUser);
+  return new Promise((resolve) => {
+    jwt.sign(userObject, process.env.JWT_SECRET, (signErr, token) => {
+      if (signErr) {
+        return res.status(500).json({ error: 'Something went wrong. Check your request and try again.', signErr });
+      }
+      return resolve(token);
+    });
+  });
+};
 
 exports.allUsersGet = asyncHandler(async (req, res) => {
-  if (req.token === null) {
-    return res.status(403).json({ error: 'You are not signed in.' });
-  }
   // Get all users
-  jwt.verify(req.token, process.env.JWT_SECRET, async (err, user) => {
-    if (err) {
-      return res.json(err);
-    }
-    const currentUser = await User.findById(user._id);
+  const currentUser = await User.findById(req.user._id);
 
-    if (!currentUser.isAdmin) {
-      return res.status(403).send({
-        error: 'Forbidden',
-      });
-    }
-    const users = await User.find()
-      .select('-password');
-    return res.json(users);
-  });
-  return res.status(500).json({ error: 'Something went wrong.' });
+  if (!currentUser.isAdmin) {
+    return res.status(403).send({
+      error: 'You must be an admin to see all users.',
+    });
+  }
+  const users = await User.find()
+    .select('-password');
+  return res.json(users);
 });
 
 exports.selfGet = asyncHandler(async (req, res) => {
-  if (req.token === null) {
-    return res.status(403).json({ error: 'You are not signed in.' });
+  const currentUser = await User.findById(req.user._id)
+    .select('-password');
+  if (!currentUser) {
+    return res.status(404).json({ error: 'The user you\'re trying to find was not found.' });
   }
-  jwt.verify(req.token, process.env.JWT_SECRET, async (err, user) => {
-    if (err) {
-      return res.json(err);
-    }
-    const currentUser = await User.findById(user._id)
-      .select('-password');
-    if (!currentUser) {
-      return res.status(404);
-    }
-    return res.json(currentUser);
-  });
-  return res.status(500).json({ error: 'Something went wrong.' });
+  return res.json(currentUser);
 });
 
 exports.userGet = asyncHandler(async (req, res) => {
-  if (req.token === null) {
-    return res.status(403).json({ error: 'You are not signed in.' });
+  const currentUser = await User.findById(req.user._id);
+  if (!currentUser) {
+    return res.status(404).json({ error: 'The user you\'re trying to find was not found.' });
   }
-  jwt.verify(req.token, process.env.JWT_SECRET, async (err, jwtUser) => {
-    if (err) {
-      return res.send(err);
-    }
-    const currentUser = await User.findById(jwtUser._id);
-    if (!currentUser) {
-      return res.status(404);
-    }
-    if (!currentUser.isAdmin) {
-      const user = await User.findById(jwtUser._id)
-        .select('-password')
-        .select('-lastName')
-        .select('-chatrooms');
-      return res.json(user);
-    }
-    const user = await User.findById(jwtUser._id)
-      .select('-password');
+  if (!currentUser.isAdmin) {
+    const user = await User.findById(req.user._id)
+      .select('-password')
+      .select('-lastName')
+      .select('-chatrooms');
     return res.json(user);
-  });
-  return res.status(500).json({ error: 'Something went wrong.' });
+  }
+  const user = await User.findById(req.user._id)
+    .select('-password');
+  return res.json(user);
 });
 
 exports.userJoinChatroom = [
@@ -85,91 +100,46 @@ exports.userJoinChatroom = [
     .escape(),
 
   asyncHandler(async (req, res) => {
-    if (req.token === null) {
-      return res.status(403).json({ error: 'You are not signed in.' });
-    }
-    jwt.verify(req.token, process.env.JWT_SECRET, async (verifyErr, user) => {
-      const currentUser = await User.findById(user._id);
-      if (verifyErr) {
-        return res.status(403).json({ error: 'Forbidden' });
-      }
-      const chatroom = await Chatroom.findById(req.params.chatroomId);
-      if (!currentUser || !chatroom) {
-        return res.status(404);
-      }
-      if (currentUser.chatrooms.includes(chatroom._id)) {
-        return res.status(403).json(user.chatrooms);
-      }
-      const match = bcrypt.compare(req.body.password, chatroom.password);
-      if (!await match && !currentUser.isAdmin && !chatroom.isPublic) {
-        return res.status(401).json({ error: 'Incorrect password' });
-      }
-      const userChatrooms = [...currentUser.chatrooms, chatroom];
-      const newUser = new User({
-        first_name: user.firstName,
-        last_name: user.lastName,
-        username: user.username,
-        password: user.password,
-        chatrooms: userChatrooms,
-        _id: user._id,
-      });
+    const currentUser = await User.findById(req.user._id);
 
-      await User.findByIdAndUpdate(user._id, newUser, {});
-      const { password, ...rest } = newUser._doc;
-      const updatedUser = await { firstName: user.firstName, lastName: user.lastName, ...rest };
-      jwt.sign(updatedUser, process.env.JWT_SECRET, (signErr, token) => {
-        if (verifyErr) {
-          return res.status(500).json({ error: 'Something went wrong', signErr });
-        }
-        return res.send({ token, chatroomId: req.params.chatroomId });
-      });
-      return res.status(500).json({ error: 'Something went wrong.' });
-    });
-    return res.status(500).json({ error: 'Something went wrong.' });
+    const chatroom = await Chatroom.findById(req.params.chatroomId);
+    if (!currentUser || !chatroom) {
+      return res.status(404).json('The chatroom does not exist or your not permitted to join.');
+    }
+    if (currentUser.chatrooms.includes(chatroom._id)) {
+      return res.status(403).json(req.user.chatrooms);
+    }
+    const match = bcrypt.compare(req.body.password, chatroom.password);
+    if (!await match && !currentUser.isAdmin && !chatroom.isPublic) {
+      return res.status(401).json({ error: 'Incorrect password' });
+    }
+    const userChatrooms = [...currentUser.chatrooms, chatroom];
+    const newUser = createNewUserObject(currentUser, { chatrooms: userChatrooms });
+
+    await User.findByIdAndUpdate(currentUser._id, newUser, {});
+    const token = await jwtSign(newUser._doc);
+    return res.json({ token, chatroomId: chatroom._id });
   }),
 ];
 
 exports.userLeaveChatroom = asyncHandler(async (req, res) => {
-  if (req.token === null) {
-    return res.status(403).json({ error: 'You are not signed in.' });
+  const currentUser = await User.findById(req.user._id);
+  if (!currentUser) {
+    return res.status(404);
   }
-  jwt.verify(req.token, process.env.JWT_SECRET, async (verifyErr, user) => {
-    const currentUser = await User.findById(user._id);
-    if (!currentUser) {
-      return res.status(404);
-    }
-    if (verifyErr) {
-      return res.status(403).json({ error: 'Forbidden' });
-    }
-    const chatroomIndex = currentUser.chatrooms.indexOf(req.params.chatroomId);
-    if (chatroomIndex < 0) {
-      return res.status(403).json({ error: 'You are not in this chatroom.' });
-    }
-    currentUser.chatrooms.splice(chatroomIndex, 1);
-    const newUser = new User({
-      first_name: currentUser.firstName,
-      last_name: currentUser.lastName,
-      username: currentUser.username,
-      password: currentUser.password,
-      chatrooms: currentUser.chatrooms,
-      _id: currentUser._id,
-    });
+  const chatroomIndex = currentUser.chatrooms.indexOf(req.params.chatroomId);
+  if (chatroomIndex < 0) {
+    return res.status(403).json({ error: 'You are not in the chatroom you\'re trying to leave.' });
+  }
+  currentUser.chatrooms.splice(chatroomIndex, 1);
+  const newUser = createNewUserObject(currentUser, null);
 
-    await User.findByIdAndUpdate(user._id, newUser, {});
-    const { password, ...rest } = newUser._doc;
-    const updatedUser = { firstName: user.firstName, lastName: user.lastName, ...rest };
-    jwt.sign(updatedUser, process.env.JWT_SECRET, (signErr, token) => {
-      if (signErr) {
-        return res.status(500).json({ error: 'Something went wrong', signErr });
-      }
-      return res.send({ token });
-    });
-    return res.status(500).json({ error: 'Something went wrong.' });
-  });
-  return res.status(500).json({ error: 'Something went wrong.' });
+  await User.findByIdAndUpdate(req.user._id, newUser, {});
+  const token = await jwtSign(newUser._doc);
+  return res.json({ token });
 });
 
-// Handle user create (sign-up) on POST.
+// Handle user create (sin-up) on POST.
 exports.userCreatePost = [
   // Validate and sanitize fields.
   body('firstName', 'First name must not be empty.')
@@ -211,19 +181,13 @@ exports.userCreatePost = [
     const usernameExists = await User.exists({ username: req.body.username });
     if (!usernameExists) {
       if (req.body.password === req.body.passwordConfirmation) {
-        bcrypt.hash(req.body.password, 10, async (err, hashedPassword) => {
+        return bcrypt.hash(req.body.password, 10, async (err, hashedPassword) => {
         // if err, do something
         // otherwise, store hashedPassword in DB
           if (err) {
             return res.json(err);
           }
-          const user = new User({
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            username: req.body.username,
-            password: hashedPassword,
-            isAdmin: false,
-          });
+          const user = createNewUserObject(req.body, { password: hashedPassword, isAdmin: false });
 
           if (!errors.isEmpty()) {
             return res.json({
@@ -240,47 +204,25 @@ exports.userCreatePost = [
             isAdmin: user.isAdmin,
           });
         });
-      } else {
-        return res.status(403).json({
-          error: 'Passwords do not match.',
-        });
       }
-    } else {
-      return res.status(409).json({ error: 'username already exists' });
+      return res.status(403).json({
+        error: 'Passwords do not match.',
+      });
     }
-    return res.status(500).json({ error: 'Something went wrong.' });
+    return res.status(409).json({ error: 'username already exists' });
   }),
 ];
 
 exports.makeUserAdmin = asyncHandler(async (req, res) => {
-  if (req.token === null) {
-    return res.status(403).json({ error: 'You are not signed in.' });
+  const newAdmin = await User.findById(req.params.userId);
+  if (!req.user.isAdmin) {
+    return res.status(403).json({ error: 'You need to be an admin to make another user an admin.' });
   }
-  jwt.verify(req.token, process.env.JWT_SECRET, async (err, user) => {
-    if (err) {
-      res.status(403);
-    } else {
-      const newAdmin = await User.findById(req.params.userId);
-      if (!user.isAdmin) {
-        return res.status(403).json({ error: 'You need to be an admin to make another user an admin.' });
-      }
-      if (newAdmin.isAdmin) {
-        return res.status(403).json({ error: 'User is already an admin.' });
-      }
-      const newUser = new User({
-        first_name: newAdmin.firstName,
-        last_name: newAdmin.lastName,
-        username: newAdmin.username,
-        password: newAdmin.password,
-        chatrooms: newAdmin.chatrooms,
-        isAdmin: true,
-        _id: newAdmin._id,
-      });
+  if (newAdmin.isAdmin) {
+    return res.status(403).json({ error: 'This user is already an admin.' });
+  }
+  const newUser = createNewUserObject(newAdmin, { isAdmin: true });
 
-      await User.findByIdAndUpdate(user._id, newUser, {});
-      return res.json(newUser);
-    }
-    return res.status(500).json({ error: 'Something went wrong.' });
-  });
-  return res.status(500).json({ error: 'Something went wrong.' });
+  await User.findByIdAndUpdate(req.user._id, newUser, {});
+  return res.json(newUser);
 });

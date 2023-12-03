@@ -4,11 +4,11 @@ const Chatroom = require('../models/chatroom');
 const User = require('../models/users');
 
 const createNewChatroomObject = (currentUser, updateFields) => {
-  // TODO: refactor out
   const {
     roomName,
     password,
     passwordConfirmation,
+    isPublic,
     // eslint-disable-next-line @typescript-eslint/naming-convention
     _id: id,
   } = currentUser;
@@ -17,6 +17,7 @@ const createNewChatroomObject = (currentUser, updateFields) => {
     roomName,
     password,
     passwordConfirmation,
+    isPublic,
     ...updateFields,
     id,
   });
@@ -46,7 +47,7 @@ exports.createChatroomPost = asyncHandler(async (req, res) => {
   if (req.token === null) {
     return res.status(403).json({ error: 'You are not signed in.' });
   }
-  bcrypt.hash(req.body.password, 10, async (bcryptErr, hashedPassword) => {
+  return bcrypt.hash(req.body.password, 10, async (bcryptErr, hashedPassword) => {
     if (bcryptErr) {
       return res.status(403);
     }
@@ -59,7 +60,6 @@ exports.createChatroomPost = asyncHandler(async (req, res) => {
     await newChatroom.save();
     return res.json(newChatroom);
   });
-  return res.status(500).json({ error: 'Something went wrong.' });
 });
 
 exports.deleteChatroom = asyncHandler(async (req, res) => {
