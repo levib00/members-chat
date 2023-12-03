@@ -36,6 +36,7 @@ function Message(props: IMessagesProps) {
   const {
     messageInfo, currentUser, sendMessage, handleNewWsMessage, isEdits, toggle,
   } = props;
+
   const {
     username, timestamp, content, _id: id,
   } = messageInfo;
@@ -69,11 +70,17 @@ function Message(props: IMessagesProps) {
       validateCreateDeleteMessage(response, navigate, setValidationError, null, sendMessage);
     } catch (error: any) { //
       setValidationError(error); // Redirect to error page if there is a non-validation error.
-      handleNewWsMessage({ messageInfo });
     }
   };
 
   const sendEdit = async () => {
+    toggle();
+    handleNewWsMessage({
+      username,
+      timestamp: date,
+      content: messageInput,
+      _id: id,
+    });
     try {
       const response = await fetch(`http://localhost:3000/messages/edit/${id}`, {
         method: 'PUT',
