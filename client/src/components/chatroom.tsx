@@ -68,7 +68,7 @@ const Chatroom = (props: IChatroomProps) => {
     } else { // Edit existing message.
       const newMessages = [...response.messages];
       newMessages[objIndex] = message;
-      mutate({ ...response, messages: newMessages });
+      mutate({ ...response, messages: newMessages }, { revalidate: false });
     }
   };
 
