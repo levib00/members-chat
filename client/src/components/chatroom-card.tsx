@@ -31,7 +31,7 @@ const ChatroomCard = (props: IChatroomCardProps) => {
     } else if (hasUser) {
       navigate(`/chatrooms/${id}`);
     } else {
-      const response = submitPost(
+      const response = await submitPost(
         `http://localhost:3000/users/join/${id}`,
         { password: passwordInput },
         e,
