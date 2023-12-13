@@ -4,15 +4,24 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
+import * as postFetch from '../../utility-functions/post-fetch';
 import CreateChat from '../../components/create-chat';
 
 import '@testing-library/jest-dom';
 
-describe('Chatroom gets messages then renders them', () => {
-  test('renders messages in chatroom', async () => {
+describe('Create chat', () => {
+  test('create chat renders for new non-edit chat.', async () => {
+    const submitPost = jest
+      .spyOn(postFetch, 'submitPost')
+      .mockImplementation((arg1, arg2, e) => {
+        e.preventDefault();
+        return Promise.resolve();
+      });
+
+    // Mock fetch
     render(
       <MemoryRouter>
-        <CreateChat setError={() => false} />
+        <CreateChat isEdit={false} chatroom={null} />
       </MemoryRouter>,
     );
 
@@ -31,5 +40,6 @@ describe('Chatroom gets messages then renders them', () => {
     expect(chatNameInput.value).toBe('name test');
     expect(passwordInput.value).toBe('1234');
     expect(passwordConfirmInput.value).toBe('1234');
+    expect(submitPost).lastCalledWith('http://localhost:3000/chatrooms/new', expect.anything(), expect.anything(), expect.anything(), expect.anything(), expect.anything(), null, expect.anything());
   });
 });

@@ -7,27 +7,48 @@ import * as SWR from 'swr';
 import ChatroomList from '../../components/chat-list';
 
 describe('List fetches listings then makes cards', () => {
-  const mockResponse = [
+  const mockChatroomsResponse = [
     {
-      name: 'room0',
+      roomName: 'room0',
       password: '1234',
       isPublic: true,
       chatroomId: '4321',
     },
     {
-      name: 'this Room1',
+      roomName: 'this Room1',
       password: '1234',
       isPublic: false,
       chatroomId: '4321',
     },
   ];
 
+  const mockUserResponse = {
+    firstName: 'thisUser0',
+    lastName: 'lastName',
+    username: 'username',
+    chatrooms: [],
+  };
+
   test('render chat cards in list', () => {
     jest
       .spyOn(SWR, 'default')
-      .mockImplementation(
-        () => ({ data: mockResponse, isValidating: false, mutate: () => Promise.resolve() }),
-      );
+      .mockImplementation((url) => {
+        if (url.includes('chatrooms')) {
+          return {
+            data: mockChatroomsResponse,
+            isValidating: false,
+            mutate: () => Promise.resolve(),
+          };
+        }
+        if (url.includes('users')) {
+          return {
+            data: mockUserResponse,
+            isValidating: false,
+            mutate: () => Promise.resolve(),
+          };
+        }
+        return null;
+      });
 
     render(
       <MemoryRouter>
