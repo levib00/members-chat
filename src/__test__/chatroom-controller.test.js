@@ -6,7 +6,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-const messages = require('../chatrooms');
+const messages = require('../../routes/chatrooms');
 
 const User = require('../../models/users');
 const Message = require('../../models/messages');
@@ -19,29 +19,35 @@ app.use('/chatrooms', messages);
 
 describe('Chatroom get', () => {
   beforeAll(() => {
-    Chatroom.find = jest.fn().mockResolvedValue([{
-      roomName: 'name',
-      isPublic: true,
-      password: '1234',
-      createdBy: { user: 'user' },
-    },
-    {
-      roomName: 'name2',
-      isPublic: false,
-      password: '43132',
-      createdBy: { user: 'user2' },
-    }]);
+    jest.spyOn(Chatroom, 'find')
+      .mockImplementationOnce(() => ({
+        select: jest.fn().mockResolvedValue([{
+          roomName: 'name',
+          isPublic: true,
+          password: '1234',
+          createdBy: { user: 'user' },
+        },
+        {
+          roomName: 'name2',
+          isPublic: false,
+          password: '43132',
+          createdBy: { user: 'user2' },
+        }]),
+      }));
 
-    Chatroom.findById = jest.fn().mockResolvedValue({
-      _id: '5dbff32e367a343830cd2f48',
-      roomName: 'room name',
-      password: '123456789',
-      isPublic: false,
-    });
+    jest.spyOn(Chatroom, 'findById')
+      .mockImplementationOnce(() => ({
+        select: jest.fn().mockResolvedValue({
+          _id: '5dbff32e367a343830cd2f48',
+          roomName: 'room name',
+          password: '123456789',
+          isPublic: false,
+        }),
+      }));
   });
 
   describe('Get all chatrooms', () => {
-    test('Ok if happy', (done) => {
+    test('Happy', (done) => {
       request(app)
         .get('/chatrooms/')
         .expect('Content-Type', /json/)
@@ -59,7 +65,7 @@ describe('Chatroom get', () => {
   });
 });
 
-describe('Create new chat', () => {
+describe('Create new chat', () => { // TODO: decide if i want to limit duplicate chatroom names
   beforeAll(() => {
     Chatroom.findById = jest.fn().mockResolvedValue({
       _id: '5dbff32e367a343830cd2f49',
@@ -138,6 +144,7 @@ describe('Create new chat', () => {
         roomName: 'message must be less than 300 characters long.',
         password: 'password1234',
         isPublic: true,
+        passwordConfirmation: 'password1234',
       })
       .expect(200, done);
   });
@@ -245,6 +252,20 @@ describe('Delete Chatroom', () => {
 });
 
 describe('Edit chatroom put', () => {
+  beforeEach(() => {
+    User.findById = jest.fn().mockResolvedValue({
+      _id: '5dbff32e367a343830cd2f49',
+      first_name: 'myname',
+      last_name: 'mylastname',
+      username: ' username0',
+      password: '123456789',
+      isAdmin: false,
+      chatrooms: [],
+    });
+
+    Chatroom.findByIdAndUpdate = jest.fn();
+  });
+
   test('Forbidden error if not the user who created the chatroom', (done) => {
     const user = {
       _id: 'userObjectId',
@@ -265,7 +286,7 @@ describe('Edit chatroom put', () => {
             password: 'password1234',
             isPublic: true,
             createdBy: {
-              _id: 'differentUserObjectId',
+              _id: { equals: jest.fn().mockReturnValue(false) },
               first_name: 'myname',
               last_name: 'mylastname',
               username: 'username0',
@@ -312,7 +333,7 @@ describe('Edit chatroom put', () => {
             password: 'password1234',
             isPublic: true,
             createdBy: {
-              _id: 'differentUserObjectId',
+              _id: { equals: jest.fn().mockReturnValue(true) },
               first_name: 'myname',
               last_name: 'mylastname',
               username: 'username0',
@@ -341,11 +362,6 @@ describe('Edit chatroom put', () => {
   test('Forbidden if no jwt', (done) => {
     request(app)
       .put('/chatrooms/edit/5dbff32e367a343830cd2f49')
-      .send({
-        roomName: 'new name',
-        isPublic: false,
-        password: 'newpass',
-      })
       .expect('Content-Type', /json/)
       .expect({ error: 'You are not signed in.' })
       .expect(403, done);
@@ -371,7 +387,7 @@ describe('Edit chatroom put', () => {
             password: 'password1234',
             isPublic: true,
             createdBy: {
-              _id: 'differentUserObjectId',
+              _id: { equals: jest.fn().mockReturnValue(true) },
               first_name: 'myname',
               last_name: 'mylastname',
               username: 'username0',
@@ -397,7 +413,8 @@ describe('Edit chatroom put', () => {
       .send({
         roomName: 'new name',
         isPublic: false,
-        password: 'newpass',
+        password: 'newspass',
+        passwordConfirmation: 'newspass',
       })
       .expect(200, done);
   });
@@ -413,6 +430,16 @@ describe('Edit chatroom put', () => {
       chatrooms: [],
     };
 
+    User.findById = jest.fn().mockResolvedValue({
+      _id: '5dbff32e367a343830cd2f49',
+      first_name: 'myname',
+      last_name: 'mylastname',
+      username: ' username0',
+      password: '123456789',
+      isAdmin: true,
+      chatrooms: [],
+    });
+
     jest.spyOn(Chatroom, 'findById')
       .mockImplementationOnce(() => ({
         populate: jest.fn().mockReturnValue({
@@ -422,7 +449,7 @@ describe('Edit chatroom put', () => {
             password: 'password1234',
             isPublic: true,
             createdBy: {
-              _id: 'differentUserObjectId',
+              _id: { equals: jest.fn().mockReturnValue(false) },
               first_name: 'myname',
               last_name: 'mylastname',
               username: 'username0',
@@ -434,11 +461,6 @@ describe('Edit chatroom put', () => {
         }),
       }));
 
-    jest.spyOn(Message.prototype, 'save')
-      .mockImplementation({
-        apply: () => true,
-      });
-
     const token = jwt.sign(user, process.env.JWT_SECRET);
 
     request(app)
@@ -448,7 +470,8 @@ describe('Edit chatroom put', () => {
       .send({
         roomName: 'new name',
         isPublic: false,
-        password: 'newpass',
+        password: 'newspass',
+        passwordConfirmation: 'newspass',
       })
       .expect(200, done);
   });

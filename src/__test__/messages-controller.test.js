@@ -19,14 +19,19 @@ app.use('/messages', messages);
 
 describe('messages get', () => {
   beforeAll(() => {
-    Message.find = jest.fn().mockResolvedValue([{
-      _id: '5dbff32e367a343830cd2f49',
-      title: 'title',
-      content: 'message content',
-      username: ' username0',
-      timestamp: 4566521586,
-      roomID: '5dbff32e367a343830cd2f49'
-    }]);
+    jest.spyOn(Message, 'find')
+      .mockImplementation(() => ({
+        populate: jest.fn().mockReturnValue({
+          exec: jest.fn().mockReturnValue([{
+            _id: '5dbff32e367a343830cd2f49',
+            title: 'title',
+            content: 'message content',
+            username: ' username0',
+            timestamp: 4566521586,
+            roomID: '5dbff32e367a343830cd2f49',
+          }]),
+        }),
+      }));
 
     Chatroom.findById = jest.fn().mockResolvedValue({
       _id: '5dbff32e367a343830cd2f49',
@@ -36,121 +41,100 @@ describe('messages get', () => {
     });
   });
 
-  describe('All messages', () => {
-    test('Forbidden if not admin', (done) => {
-      const user = {
-        first_name: 'myname',
-        last_name: 'mylastname',
-        username: ' username0',
-        password: '123456789',
-        isAdmin: false,
-        chatrooms: [],
-      };
+  test('Forbidden if neither admin nor user of that server', (done) => {
+    const user = {
+      first_name: 'myname',
+      last_name: 'mylastname',
+      username: ' username0',
+      password: '123456789',
+      isAdmin: false,
+      chatrooms: [],
+    };
 
-      const token = jwt.sign(user, process.env.JWT_SECRET);
-
-      request(app)
-        .get('/messages/')
-        .set({ Authorization: `Bearer ${token}` })
-        .expect('Content-Type', /json/)
-        .expect({ error: 'You need to be an admin or a member of any servers you are trying to read.' })
-        .expect(403, done);
+    User.findById = jest.fn().mockResolvedValue({
+      _id: '5dbff32e367a343830cd2f49',
+      first_name: 'myname',
+      last_name: 'mylastname',
+      username: ' username0',
+      password: '123456789',
+      isAdmin: false,
+      chatrooms: ['5dbff32e367a343830cd2f42'],
     });
 
-    test('Forbidden if no jwt', (done) => {
-      request(app)
-        .get('/messages/')
-        .expect('Content-Type', /json/)
-        .expect({ error: 'You are not signed in.' })
-        .expect(403, done);
-    });
+    const token = jwt.sign(user, process.env.JWT_SECRET);
 
-    test('Ok if happy', (done) => {
-      const user = {
-        first_name: 'myname',
-        last_name: 'mylastname',
-        username: ' username0',
-        password: '123456789',
-        isAdmin: true,
-        chatrooms: [],
-      };
-
-      const token = jwt.sign(user, process.env.JWT_SECRET);
-
-      request(app)
-        .get('/messages/')
-        .set({ Authorization: `Bearer ${token}` })
-        .expect('Content-Type', /json/)
-        .expect(200, done);
-    });
+    request(app)
+      .get('/messages/chatroom/5dbff32e367a343830cd2f49')
+      .set({ Authorization: `Bearer ${token}` })
+      .expect('Content-Type', /json/)
+      .expect({ error: 'You need to be an admin or a member of any servers you are trying to read.' })
+      .expect(403, done);
   });
 
-  describe('Per Chatroom', () => {
-    test('Forbidden if neither admin nor user of that server', (done) => {
-      const user = {
-        first_name: 'myname',
-        last_name: 'mylastname',
-        username: ' username0',
-        password: '123456789',
-        isAdmin: false,
-        chatrooms: [],
-      };
+  test('Forbidden if no jwt', (done) => {
+    request(app)
+      .get('/messages/chatroom/5dbff32e367a343830cd2f49')
+      .expect('Content-Type', /json/)
+      .expect({ error: 'You are not signed in.' })
+      .expect(403, done);
+  });
 
-      const token = jwt.sign(user, process.env.JWT_SECRET);
+  test('Ok if user is admin', (done) => {
+    const user = {
+      first_name: 'myname',
+      last_name: 'mylastname',
+      username: ' username0',
+      password: '123456789',
+      isAdmin: true,
+      chatrooms: [],
+    };
 
-      request(app)
-        .get('/messages/chatroom/5dbff32e367a343830cd2f49')
-        .set({ Authorization: `Bearer ${token}` })
-        .expect('Content-Type', /json/)
-        .expect({ error: 'You need to be an admin or a member of any servers you are trying to read.' })
-        .expect(403, done);
+    User.findById = jest.fn().mockResolvedValue({
+      _id: '5dbff32e367a343830cd2f49',
+      first_name: 'myname',
+      last_name: 'mylastname',
+      username: ' username0',
+      password: '123456789',
+      isAdmin: false,
+      chatrooms: ['5dbff32e367a343830cd2f49'],
     });
 
-    test('Forbidden if no jwt', (done) => {
-      request(app)
-        .get('/messages/chatroom/5dbff32e367a343830cd2f49')
-        .expect('Content-Type', /json/)
-        .expect({ error: 'You are not signed in.' })
-        .expect(403, done);
+    const token = jwt.sign(user, process.env.JWT_SECRET);
+
+    request(app)
+      .get('/messages/chatroom/5dbff32e367a343830cd2f49')
+      .set({ Authorization: `Bearer ${token}` })
+      .expect('Content-Type', /json/)
+      .expect(200, done);
+  });
+
+  test('Ok if user belongs to the server but not admin', (done) => {
+    const user = {
+      first_name: 'myname',
+      last_name: 'mylastname',
+      username: ' username0',
+      password: '123456789',
+      isAdmin: false,
+      chatrooms: ['5dbff32e367a343830cd2f49'],
+    };
+
+    const token = jwt.sign(user, process.env.JWT_SECRET);
+
+    User.findById = jest.fn().mockResolvedValue({
+      _id: '5dbff32e367a343830cd2f49',
+      first_name: 'myname',
+      last_name: 'mylastname',
+      username: ' username0',
+      password: '123456789',
+      isAdmin: true,
+      chatrooms: ['5dbff32e367a343830cd2f42'],
     });
 
-    test('Ok if user is admin', (done) => {
-      const user = {
-        first_name: 'myname',
-        last_name: 'mylastname',
-        username: ' username0',
-        password: '123456789',
-        isAdmin: true,
-        chatrooms: [],
-      };
-
-      const token = jwt.sign(user, process.env.JWT_SECRET);
-
-      request(app)
-        .get('/messages/chatroom/5dbff32e367a343830cd2f49')
-        .set({ Authorization: `Bearer ${token}` })
-        .expect('Content-Type', /json/)
-        .expect(200, done);
-    });
-
-    test('Ok if user belongs to the server but not admin', (done) => {
-      const user = {
-        first_name: 'myname',
-        last_name: 'mylastname',
-        username: ' username0',
-        password: '123456789',
-        isAdmin: false,
-        chatrooms: ['5dbff32e367a343830cd2f49'],
-      };
-
-      const token = jwt.sign(user, process.env.JWT_SECRET);
-
-      request(app)
-        .get('/messages/chatroom/5dbff32e367a343830cd2f49')
-        .set({ Authorization: `Bearer ${token}` })
-        .expect('Content-Type', /json/)
-        .expect(200, done);
-    });
+    request(app)
+      .get('/messages/chatroom/5dbff32e367a343830cd2f49')
+      .set({ Authorization: `Bearer ${token}` })
+      .expect('Content-Type', /json/)
+      .expect(200, done);
   });
 });
 
@@ -184,6 +168,16 @@ describe('One message get', () => {
       chatrooms: [],
     };
 
+    User.findById = jest.fn().mockResolvedValue({
+      _id: '5dbff32e367a343830cd2f49',
+      first_name: 'myname',
+      last_name: 'mylastname',
+      username: ' username0',
+      password: '123456789',
+      isAdmin: false,
+      chatroom: [],
+    });
+
     const token = jwt.sign(user, process.env.JWT_SECRET);
 
     request(app)
@@ -213,6 +207,16 @@ describe('One message get', () => {
       chatrooms: [],
     };
 
+    User.findById = jest.fn().mockResolvedValue({
+      _id: '5dbff32e367a343830cd2f49',
+      first_name: 'myname',
+      last_name: 'mylastname',
+      username: ' username0',
+      password: '123456789',
+      isAdmin: true,
+      chatroom: [],
+    });
+
     const token = jwt.sign(user, process.env.JWT_SECRET);
     request(app)
       .get('/messages/5dbff32e367a343830cd2f49')
@@ -221,7 +225,7 @@ describe('One message get', () => {
       .expect(200, done);
   });
 
-  test('Ok if message belongs to the user but not admin', (done) => {
+  test('Happy if message belongs to the user but not admin', (done) => {
     const user = {
       _id: 'objectId',
       first_name: 'myname',
@@ -325,6 +329,10 @@ describe('User messages get', () => {
 });
 
 describe('Edit message put', () => {
+  beforeEach(() => {
+    Message.findByIdAndUpdate = jest.fn();
+  });
+
   test('Forbidden error if not the user who sent message', (done) => {
     const user = {
       _id: 'userObjectId',
@@ -344,7 +352,7 @@ describe('Edit message put', () => {
             title: 'title',
             content: 'message content22',
             username: {
-              _id: 'differentUserObjectId',
+              _id: { equals: jest.fn().mockReturnValue(false) },
               first_name: 'myname',
               last_name: 'mylastname',
               username: 'username0',
@@ -390,7 +398,7 @@ describe('Edit message put', () => {
             title: 'title',
             content: 'message content22',
             username: {
-              _id: 'userObjectId',
+              _id: { equals: jest.fn().mockReturnValue(true) },
               first_name: 'myname',
               last_name: 'mylastname',
               username: 'username0',
@@ -434,7 +442,6 @@ describe('Edit message put', () => {
       isAdmin: false,
       chatrooms: [],
     };
-    Message.findById.prototype.populate = jest.fn();
 
     jest.spyOn(Message, 'findById')
       .mockImplementationOnce(() => ({
@@ -444,7 +451,7 @@ describe('Edit message put', () => {
             title: 'title',
             content: 'message content22',
             username: {
-              _id: 'userObjectId',
+              _id: { equals: jest.fn().mockReturnValue(true) },
               first_name: 'myname',
               last_name: 'mylastname',
               username: 'username0',
@@ -457,11 +464,6 @@ describe('Edit message put', () => {
           }),
         }),
       }));
-
-    jest.spyOn(Message.prototype, 'save')
-      .mockImplementation({
-        apply: () => true,
-      });
 
     const token = jwt.sign(user, process.env.JWT_SECRET);
 
@@ -477,23 +479,15 @@ describe('Edit message put', () => {
 });
 
 describe('delete message', () => {
-  beforeAll(() => {
-    Message.find = jest.fn().mockResolvedValue([{
-      _id: '5dbff32e367a343830cd2f49',
-      title: 'title',
-      content: 'message content',
-      username: 'objectId',
-      timestamp: 4566521586,
-      roomId: '4dbff32e367a343830cd2f47',
-    }]);
-
-    Message.findById = jest.fn().mockResolvedValue({
-      _id: 'messageObjectId',
-      title: 'title',
-      content: 'message content',
-      username: 'objectId',
-      timestamp: 4566521586,
-      roomId: '4dbff32e367a343830cd2f47',
+  beforeEach(() => {
+    User.findById = jest.fn().mockResolvedValue({
+      _id: 'userObjectId',
+      first_name: 'myname',
+      last_name: 'mylastname',
+      username: ' username0',
+      password: '123456789',
+      isAdmin: false,
+      chatrooms: [],
     });
 
     Message.findByIdAndRemove = jest.fn();
@@ -509,6 +503,28 @@ describe('delete message', () => {
       isAdmin: false,
       chatrooms: [],
     };
+
+    jest.spyOn(Message, 'findById')
+      .mockImplementation(() => ({
+        populate: jest.fn().mockReturnValue({
+          exec: jest.fn().mockReturnValue({
+            _id: { equals: jest.fn().mockReturnValue(false) },
+            title: 'title',
+            content: 'message content22',
+            username: {
+              _id: { equals: jest.fn().mockReturnValue(false) },
+              first_name: 'myname',
+              last_name: 'mylastname',
+              username: 'username0',
+              password: '123456789',
+              isAdmin: false,
+              chatrooms: [],
+            },
+            timestamp: 4566521586,
+            roomId: '4dbff32e367a343830cd2f47',
+          }),
+        }),
+      }));
 
     const token = jwt.sign(user, process.env.JWT_SECRET);
 
@@ -538,6 +554,28 @@ describe('delete message', () => {
       chatrooms: [],
     };
 
+    jest.spyOn(Message, 'findById')
+      .mockImplementation(() => ({
+        populate: jest.fn().mockReturnValue({
+          exec: jest.fn().mockReturnValue({
+            _id: { equals: jest.fn().mockReturnValue(true) },
+            title: 'title',
+            content: 'message content22',
+            username: {
+              _id: { equals: jest.fn().mockReturnValue(true) },
+              first_name: 'myname',
+              last_name: 'mylastname',
+              username: 'username0',
+              password: '123456789',
+              isAdmin: false,
+              chatrooms: [],
+            },
+            timestamp: 4566521586,
+            roomId: '4dbff32e367a343830cd2f47',
+          }),
+        }),
+      }));
+
     const token = jwt.sign(user, process.env.JWT_SECRET);
 
     request(app)
@@ -557,6 +595,38 @@ describe('delete message', () => {
       isAdmin: true,
       chatrooms: [],
     };
+
+    jest.spyOn(Message, 'findById')
+      .mockImplementationOnce(() => ({
+        populate: jest.fn().mockReturnValue({
+          exec: jest.fn().mockReturnValue({
+            _id: { equals: jest.fn().mockReturnValue(false) },
+            title: 'title',
+            content: 'message content22',
+            username: {
+              _id: { equals: jest.fn().mockReturnValue(false) },
+              first_name: 'myname',
+              last_name: 'mylastname',
+              username: 'username0',
+              password: '123456789',
+              isAdmin: false,
+              chatrooms: [],
+            },
+            timestamp: 4566521586,
+            roomId: '4dbff32e367a343830cd2f47',
+          }),
+        }),
+      }));
+
+    User.findById = jest.fn().mockResolvedValue({
+      _id: 'userObjectId',
+      first_name: 'myname',
+      last_name: 'mylastname',
+      username: ' username0',
+      password: '123456789',
+      isAdmin: true,
+      chatrooms: [],
+    });
 
     const token = jwt.sign(user, process.env.JWT_SECRET);
 
