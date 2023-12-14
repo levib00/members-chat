@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { useNavigate, useParams } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
-import mongoose from 'mongoose';
 import useWebSocket from 'react-use-websocket';
+// import { TextDecoder, TextEncoder } from 'util';
 import { getFetcher } from '../utility-functions/fetcher';
 import { submitPost, validateLeaveChatroom, validateCreateDeleteMessage } from '../utility-functions/post-fetch';
 import Message from './message';
@@ -33,7 +33,7 @@ const Chatroom = (props: IChatroomProps) => {
 
   const [messageInput, setMessageInput] = useState('');
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [validationError, setValidationError] = useState<string | Array<string>>('');
+  const [validationError, setValidationError] = useState<string | string[]>('');
   const [leavingError, setLeavingError] = useState<string | string[]>('');
   const [isEdits, setIsEdits] = useState<null | number>(null);
 
@@ -73,18 +73,19 @@ const Chatroom = (props: IChatroomProps) => {
   };
 
   const handleSendMessage = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    if (messageInput.length < 1) {
+      return;
+    }
     setMessageInput('');
-    const objectId = new mongoose.Types.ObjectId();
     const date = new Date(Date.now());
     handleNewWsMessage({
       username: user,
       timestamp: date,
       content: messageInput,
-      _id: objectId,
     });
     const jsonResponse = await submitPost(
       `http://localhost:3000/messages/${chatroomId}`,
-      { content: messageInput, _id: objectId },
+      { content: messageInput },
       e,
       validateCreateDeleteMessage,
       setValidationError,
@@ -94,8 +95,10 @@ const Chatroom = (props: IChatroomProps) => {
     );
 
     if (await jsonResponse.error) {
-      handleNewWsMessage({ _id: objectId });
-      setValidationError('Message could not be sent');
+      handleNewWsMessage({});
+      setValidationError(jsonResponse.error.map((error: string) => error));
+    } else {
+      mutate();
     }
   };
 
@@ -120,15 +123,15 @@ const Chatroom = (props: IChatroomProps) => {
 
   return (
       <div>
-        {modalIsOpen
+        {(modalIsOpen
           && <div>
             <CreateChat chatroom={response?.chatroom} isAnEdit={true} />
             <button onClick={() => setModalIsOpen(false)}>cancel</button>
-          </div>}
+          </div>)}
         <div>
           <h2>{response?.chatroom.roomName}</h2>
           {(response?.chatroom.createdBy === user?._id)
-            ? <button onClick={() => setModalIsOpen(true)}>Edit</button> : null}
+            ? <button onClick={() => setModalIsOpen(true)}>Edit chatroom</button> : null}
           <button onClick={(e) => leaveChat(e)}>Leave chat</button>
           {leavingError || null}
         </div>
@@ -141,7 +144,7 @@ const Chatroom = (props: IChatroomProps) => {
             messageInfo={ message }
             sendMessage={ sendMessage }
             handleNewWsMessage={ handleNewWsMessage }
-            isEdits={isEdits === index} />)
+            isEdits={isEdits === index} />) // TODO: rename isEdits.
         }
         <div>
           <label htmlFor="message-box"></label>
@@ -157,7 +160,7 @@ const Chatroom = (props: IChatroomProps) => {
                     : <li key={uuid()}>{validationError}</li>
                 }
               </ul>
-            }
+              }
           </div>
         </div>
       </div>
