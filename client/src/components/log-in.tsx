@@ -12,7 +12,7 @@ const LogIn = (props: ILogInProps) => {
   const { hasAuth, setHasAuth } = props;
   const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
-  const [validationError, setValidationError] = useState<string | Array<string>>('');
+  const [validationError, setValidationError] = useState<string | string[]>('');
   const navigate = useNavigate();
 
   useEffect(() => { // Redirect if user is already logged in.

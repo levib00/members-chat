@@ -54,7 +54,7 @@ const SignUp = (props: ISignUpProps) => {
           <input type='text' id='last-name' required onChange={(e) => setLastNameInput(e.target.value)} value={lastNameInput}/>
         </div>
         <div>
-          <label htmlFor='username'>UserName:</label>
+          <label htmlFor='username'>Username:</label>
           <input type='text' id='username' required onChange={(e) => setUsernameInput(e.target.value)} value={usernameInput}/>
         </div>
         <div>

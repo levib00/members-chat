@@ -127,12 +127,14 @@ function Message(props: IMessagesProps) {
             isEdits
               ? <button onClick={toggle}>Cancel</button> : <button onClick={toggle}>Edit</button>
           ))}
-          {isEdits
-            ? <button onClick={sendEdit}>
-                save
-              </button> : <button onClick={deleteMessage}>
-                Delete
-              </button>}
+          {
+            isEdits
+              ? <button onClick={sendEdit}>
+                  save
+                </button> : <button onClick={deleteMessage}>
+                  Delete
+                </button>
+            }
         </div>
       }
 
