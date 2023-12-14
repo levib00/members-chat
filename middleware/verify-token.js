@@ -7,18 +7,20 @@ module.exports = (req, res, next) => {
     const bearer = bearerHeader.split(' ');
     const bearerToken = bearer[1];
     if (!bearerToken) {
-      return res.status(403).json({ error: 'You are not signed in.' });
+      req.user = null;
+      return next();
     }
     // eslint-disable-next-line consistent-return
-    jwt.verify(bearerToken, process.env.JWT_SECRET, (err, user) => {
+    return jwt.verify(bearerToken, process.env.JWT_SECRET, (err, user) => {
       if (err) {
-        return res.status(403).json({ error: 'Forbidden' });
+        req.user = null;
+        return next();
       }
       req.user = user;
+      return next();
       // Continue to the next middleware or route handler
     });
-  } else {
-    req.user = null;
   }
+  req.user = null;
   return next();
 };
