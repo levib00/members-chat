@@ -1,5 +1,5 @@
 import { NavigateFunction } from 'react-router-dom';
-import mongoose from 'mongoose';
+import { ObjectId } from 'bson';
 
 type IValidationFunctionArgs = (
   response: { [key: string]: any; },
@@ -102,7 +102,9 @@ export const validateLogIn = async (
     setHasAuth(true);
     navigate('/');
     return response.status;
-  } if (response.status === 401) { // Sets and renders validation errors.
+  }
+
+  if (response.status === 401) { // Sets and renders validation errors.
     setValidationError('Wrong username or password.');
     return response.status;
   }
@@ -127,9 +129,24 @@ export const validateLeaveChatroom = async (
   return errorResponse;
 };
 
+export const validateMakeAdmin = async (
+  response: { [key: string]: any },
+  navigate: NavigateFunction,
+  setValidationError: React.Dispatch<React.SetStateAction<string | string[]>>,
+) => {
+  if (response.status === 200) {
+    const tokenObject = await response.json();
+    localStorage.setItem('jwt', await tokenObject.token);
+    return response;
+  }
+  const errorResponse = await response.json();
+  setValidationError(errorResponse.error);
+  return errorResponse;
+};
+
 export const submitPost = async (
   url: string,
-  body: { [key: string]: string | boolean | mongoose.Types.ObjectId },
+  body: { [key: string]: string | boolean | ObjectId },
   e: { preventDefault: () => void; },
   validationFunction: IValidationFunctionArgs,
   setValidationError: React.Dispatch<React.SetStateAction<string | string[]>>,
