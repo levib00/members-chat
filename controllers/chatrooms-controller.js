@@ -44,8 +44,11 @@ exports.oneChatroomGet = asyncHandler(async (req, res) => {
 
 exports.createChatroomPost = asyncHandler(async (req, res) => {
   // Extract the validation errors from a request.
-  if (req.token === null) {
+  if (req.user === null) {
     return res.status(403).json({ error: 'You are not signed in.' });
+  }
+  if (!req.ValidationErrors.isEmpty()) {
+    return res.status(400).json({ errors: req.ValidationErrors.array() });
   }
   return bcrypt.hash(req.body.password, 10, async (bcryptErr, hashedPassword) => {
     if (bcryptErr) {
@@ -63,7 +66,7 @@ exports.createChatroomPost = asyncHandler(async (req, res) => {
 });
 
 exports.deleteChatroom = asyncHandler(async (req, res) => {
-  if (req.token === null) {
+  if (req.user === null) {
     return res.status(403).json({ error: 'You are not signed in.' });
   }
   const chatroom = await Chatroom.findById(req.params.chatroomId);
@@ -82,7 +85,10 @@ exports.deleteChatroom = asyncHandler(async (req, res) => {
 });
 
 exports.editChatroom = asyncHandler(async (req, res) => {
-  bcrypt.hash(req.body.password, 10, async (bcryptErr, hashedPassword) => {
+  if (req.user === null) {
+    return res.status(403).json({ error: 'You are not signed in.' });
+  }
+  return bcrypt.hash(req.body.password, 10, async (bcryptErr, hashedPassword) => {
     if (bcryptErr) {
       return res.status(403);
     }
@@ -97,6 +103,9 @@ exports.editChatroom = asyncHandler(async (req, res) => {
     }
 
     if (oldChatroom.createdBy._id.equals(user._id) || user.isAdmin) {
+      if (!req.ValidationErrors.isEmpty()) {
+        return res.status(400).json({ errors: req.ValidationErrors.array() });
+      }
       const newChatroom = createNewChatroomObject(
         req.body,
         { password: hashedPassword, createdBy: user, _id: req.params.chatroomId },
