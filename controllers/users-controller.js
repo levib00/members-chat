@@ -51,9 +51,13 @@ const jwtSign = (newUser, res) => {
 };
 
 exports.allUsersGet = asyncHandler(async (req, res) => {
+  if (req.user === null) {
+    res.status(403).json({ error: 'You are not signed in.' });
+  }
   // Get all users
   const currentUser = await User.findById(req.user._id);
 
+  // console.log(User.find)
   if (!currentUser.isAdmin) {
     return res.status(403).send({
       error: 'You must be an admin to see all users.',
@@ -74,20 +78,21 @@ exports.selfGet = asyncHandler(async (req, res) => {
 });
 
 exports.userGet = asyncHandler(async (req, res) => {
-  const currentUser = await User.findById(req.user._id);
-  if (!currentUser) {
-    return res.status(404).json({ error: 'The user you\'re trying to find was not found.' });
+  if (req.user === null) {
+    return res.status(403).json({ error: 'You are not signed in.' });
   }
-  if (!currentUser.isAdmin) {
-    const user = await User.findById(req.user._id)
+  const currentUser = await User.findById(req.user._id);
+  if (currentUser.isAdmin) {
+    const user = await User.findById(req.params.userId)
       .select('-password')
       .select('-lastName')
       .select('-chatrooms');
+    if (!user) {
+      return res.status(404).json({ error: 'The user you\'re trying to find was not found.' });
+    }
     return res.json(user);
   }
-  const user = await User.findById(req.user._id)
-    .select('-password');
-  return res.json(user);
+  return res.status(403).json({ error: 'You must be an admin to get the info of another user.' });
 });
 
 exports.userJoinChatroom = [
@@ -100,6 +105,9 @@ exports.userJoinChatroom = [
     .escape(),
 
   asyncHandler(async (req, res) => {
+    if (req.user === null) {
+      return res.status(403).json({ error: 'You are not signed in.' });
+    }
     const currentUser = await User.findById(req.user._id);
 
     const chatroom = await Chatroom.findById(req.params.chatroomId);
@@ -109,20 +117,24 @@ exports.userJoinChatroom = [
     if (currentUser.chatrooms.includes(chatroom._id)) {
       return res.status(403).json(req.user.chatrooms);
     }
-    const match = bcrypt.compare(req.body.password, chatroom.password);
-    if (!await match && !currentUser.isAdmin && !chatroom.isPublic) {
+    const match = await bcrypt.compare(req.body.password, chatroom.password);
+
+    if (!match && !currentUser.isAdmin && !chatroom.isPublic) {
       return res.status(401).json({ error: 'Incorrect password' });
     }
     const userChatrooms = [...currentUser.chatrooms, chatroom];
     const newUser = createNewUserObject(currentUser, { chatrooms: userChatrooms });
 
     await User.findByIdAndUpdate(currentUser._id, newUser, {});
-    const token = await jwtSign(newUser._doc);
+    const token = await jwtSign(newUser._doc, res);
     return res.json({ token, chatroomId: chatroom._id });
   }),
 ];
 
 exports.userLeaveChatroom = asyncHandler(async (req, res) => {
+  if (req.user === null) {
+    return res.status(403).json({ error: 'You are not signed in.' });
+  }
   const currentUser = await User.findById(req.user._id);
   if (!currentUser) {
     return res.status(404);
@@ -214,15 +226,21 @@ exports.userCreatePost = [
 ];
 
 exports.makeUserAdmin = asyncHandler(async (req, res) => {
-  const newAdmin = await User.findById(req.params.userId);
-  if (!req.user.isAdmin) {
-    return res.status(403).json({ error: 'You need to be an admin to make another user an admin.' });
+  if (req.user === null) {
+    return res.status(403).json({ error: 'You are not signed in.' });
   }
+  const newAdmin = await User.findById(req.params.userId);
   if (newAdmin.isAdmin) {
     return res.status(403).json({ error: 'This user is already an admin.' });
+  }
+  const currentUser = await User.findById(req.user._id);
+  if (!currentUser.isAdmin) {
+    return res.status(403).json({ error: 'You need to be an admin to make another user an admin.' });
   }
   const newUser = createNewUserObject(newAdmin, { isAdmin: true });
 
   await User.findByIdAndUpdate(req.user._id, newUser, {});
-  return res.json(newUser);
+
+  const token = await jwtSign(newUser._doc, res);
+  return res.json(token);
 });

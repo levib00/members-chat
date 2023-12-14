@@ -28,7 +28,7 @@ const createNewMessageObject = (currentUser, updateFields) => {
 };
 
 exports.messagesGet = asyncHandler(async (req, res) => {
-  if (req.token === null) {
+  if (req.user === null) {
     res.status(403).json({ error: 'You are not signed in.' });
   }
   const chatroom = await Chatroom.findById(req.params.chatroomId);
@@ -40,13 +40,14 @@ exports.messagesGet = asyncHandler(async (req, res) => {
     const messages = await Message.find({ roomId: req.params.chatroomId })
       .populate('username')
       .exec();
+
     return res.json({ messages, chatroom });
   }
   return res.status(403).json({ error: 'You need to be an admin or a member of any servers you are trying to read.' });
 });
 
 exports.oneMessageGet = asyncHandler(async (req, res) => {
-  if (req.token === null) {
+  if (req.user === null) {
     return res.status(403).json({ error: 'You are not signed in.' });
   }
   const currentUser = await User.findById(req.user._id);
@@ -66,11 +67,12 @@ exports.oneMessageGet = asyncHandler(async (req, res) => {
 });
 
 exports.userMessagesGet = asyncHandler(async (req, res) => {
-  if (req.token === null) {
+  if (req.user === null) {
     return res.status(403).json({ error: 'You are not signed in.' });
   }
   const message = await Message.find({ username: req.params.userId });
-  if (req.user.isAdmin) {
+  const currentUser = User.findById(req.user._id);
+  if (currentUser.isAdmin) {
     return res.json(message);
   }
   if (req.params.userId === req.user._id) {
@@ -80,14 +82,13 @@ exports.userMessagesGet = asyncHandler(async (req, res) => {
 });
 
 exports.messageDelete = asyncHandler(async (req, res) => {
-  if (req.token === null) {
+  if (req.user === null) {
     return res.status(403).json({ error: 'You are not signed in.' });
   }
   const currentUser = await User.findById(req.user._id);
   const oldMessage = await Message.findById(req.params.messageId)
     .populate('username')
     .exec();
-
   if (!oldMessage) {
     return res.status(404);
   }
@@ -110,7 +111,7 @@ exports.messageEdit = [
   // Process request after validation and sanitization.
 
   asyncHandler(async (req, res) => {
-    if (req.token === null) {
+    if (req.user === null) {
       return res.status(403).json({ error: 'You are not signed in.' });
     }
     const errors = validationResult(req);
@@ -121,7 +122,6 @@ exports.messageEdit = [
     if (!oldMessage) {
       return res.status(404);
     }
-
     if (oldMessage.username._id.equals(req.user._id)) {
       const newMessage = createNewMessageObject(oldMessage, req.body);
 
@@ -154,6 +154,9 @@ exports.messagePost = [
   // Process request after validation and sanitization.
 
   asyncHandler(async (req, res) => {
+    if (!req.user) {
+      return res.status(403).json({ error: 'You are not signed in.' })
+    }
     function isObjectIdValid(id) {
       if (ObjectId.isValid(id)) {
         if (String(new ObjectId(id)) === id) {
