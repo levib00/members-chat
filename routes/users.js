@@ -11,7 +11,9 @@ router.get('/', verifyToken, usersController.allUsersGet);
 
 router.get('/user', verifyToken, usersController.selfGet);
 
-// router.get('/user/userId', verifyToken, usersController.userGet);
+router.get('/user/:userId', verifyToken, usersController.userGet);
+
+router.put('/admin/:userId', verifyToken, usersController.makeUserAdmin);
 
 router.post('/sign-up', usersController.userCreatePost);
 
