@@ -12,14 +12,18 @@ interface IChatroomInfo {
   _id: string
 }
 
+// ChatroomList functional component
 const ChatroomList = () => {
-  const [adminInput, setAdminInput] = useState('');
-  const navigate = useNavigate();
+  const [adminInput, setAdminInput] = useState(''); // State for admin input
+  const navigate = useNavigate(); // Accessing the navigation function from React Router
 
+  // Fetching user data using SWR
   const { data: user, error: userError } = useSWR('http://localhost:3000/users/user', getFetcher);
 
+  // Fetching chatroom data using SWR
   const { data: chatrooms } = useSWR('http://localhost:3000/chatrooms/', getFetcher);
 
+  // Redirecting to login page if there's an error fetching user data or user is not signed in
   useEffect(() => {
     if (userError) {
       navigate('/log-in');
@@ -28,16 +32,21 @@ const ChatroomList = () => {
 
   return (
     <>
-    <div>
-    {user?.isAdmin && <>
-      <p>Enter a users name to make them an admin:</p>
-       <div>
-        <input type='text' onChange={(e) => setAdminInput(e.target.value)} value={adminInput}/>
-        <button>Submit</button>
+      <div>
+        {/* Rendering input to make another user an admin if the current user is an admin */}
+        {user?.isAdmin && <>
+          <p>Enter a user's name to make them an admin:</p>
+          <div>
+            <input type='text' onChange={(e) => setAdminInput(e.target.value)} value={adminInput} />
+            <button>Submit</button>
+          </div>
+        </>}
       </div>
-      </>}
-    </div>
+
+      {/* Link to create a new chatroom page */}
       <Link to='/chatrooms/new'><button>Create a new chatroom</button></Link>
+
+      {/* Mapping through chatrooms and rendering ChatroomCard component for each */}
       {user && chatrooms?.map(
         (chatroom: IChatroomInfo) => <ChatroomCard key={uuid()}
           chatroomInfo={chatroom}

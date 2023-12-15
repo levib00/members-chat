@@ -3,25 +3,32 @@ import { Link, useNavigate } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 import { validateLogIn, submitPost } from '../utility-functions/post-fetch';
 
+// Props interface for the LogIn component
 interface ILogInProps {
-  hasAuth: boolean,
-  setHasAuth: React.Dispatch<React.SetStateAction<boolean>>
+  hasAuth: boolean; // Indicates whether the user is already authenticated
+  // Function to update the authentication status
+  setHasAuth: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+// LogIn functional component that handles user login
 const LogIn = (props: ILogInProps) => {
-  const { hasAuth, setHasAuth } = props;
+  const { hasAuth, setHasAuth } = props; // Destructuring props
+
+  // State variables for managing username, password inputs, and validation errors
   const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [validationError, setValidationError] = useState<string | string[]>('');
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Accessing navigation function from React Router
 
-  useEffect(() => { // Redirect if user is already logged in.
+  useEffect(() => { // Redirect if the user is already logged in
     if (hasAuth) {
-      navigate('/');
+      navigate('/'); // Redirect to the home page if already authenticated
     }
   });
 
+  // Function to handle user login
   const logIn = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    // Perform a POST request to log in the user
     submitPost(
       'http://localhost:3000/users/log-in',
       { username: usernameInput, password: passwordInput },
@@ -29,13 +36,15 @@ const LogIn = (props: ILogInProps) => {
       validateLogIn,
       setValidationError,
       navigate,
-      setHasAuth,
+      setHasAuth, // Update the authentication status after successful login
       () => null,
     );
   };
 
+  // JSX rendering for the LogIn component
   return (
     <>
+      {/* Login form */}
       <form action="">
         <div>
           <label htmlFor="username">Username:</label>
@@ -46,17 +55,22 @@ const LogIn = (props: ILogInProps) => {
           <input type="text" id="password" required onChange={(e) => setPasswordInput(e.target.value)} value={passwordInput}/>
         </div>
         <button onClick={(e) => logIn(e)}>Log in</button>
+
+        {/* Displaying validation errors if any */}
         {
-          validationError
-          && <ul>
-            {
-              Array.isArray(validationError)
-                ? validationError.map((error: string) => <li key={uuid()}>{error}</li>)
-                : <li key={uuid()}>{validationError}</li>
-            }
-          </ul>
+          validationError && (
+            <ul>
+              {
+                Array.isArray(validationError)
+                  ? validationError.map((error: string) => <li key={uuid()}>{error}</li>)
+                  : <li key={uuid()}>{validationError}</li>
+              }
+            </ul>
+          )
         }
       </form>
+
+      {/* Link to sign-up page */}
       <Link to='/sign-up'><button>Don't have an account?</button></Link>
     </>
   );

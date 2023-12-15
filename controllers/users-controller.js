@@ -7,6 +7,9 @@ const Chatroom = require('../models/chatroom');
 require('dotenv').config();
 
 const createNewUserObject = (currentUser, updateFields) => {
+  // Function to create a new user object
+
+  // Destructuring needed properties from currentUser
   const {
     firstName,
     lastName,
@@ -17,6 +20,7 @@ const createNewUserObject = (currentUser, updateFields) => {
     _id,
   } = currentUser;
 
+  // Create a new User object with given properties
   const newUser = new User({
     firstName,
     lastName,
@@ -30,6 +34,7 @@ const createNewUserObject = (currentUser, updateFields) => {
 };
 
 const formatUserObject = (newUser) => {
+  // Function to format user object for token generation
   const { password, ...rest } = newUser;
   return {
     firstName: newUser.firstName,
@@ -39,6 +44,7 @@ const formatUserObject = (newUser) => {
 };
 
 const jwtSign = (newUser, res) => {
+  // Function to sign a JWT token based on user object
   const userObject = formatUserObject(newUser);
   return new Promise((resolve) => {
     jwt.sign(userObject, process.env.JWT_SECRET, (signErr, token) => {
@@ -50,6 +56,7 @@ const jwtSign = (newUser, res) => {
   });
 };
 
+// Get all users (accessible to admin)
 exports.allUsersGet = asyncHandler(async (req, res) => {
   if (req.user === null) {
     res.status(403).json({ error: 'You are not signed in.' });
@@ -68,6 +75,7 @@ exports.allUsersGet = asyncHandler(async (req, res) => {
   return res.json(users);
 });
 
+// Get information of the signed-in user
 exports.selfGet = asyncHandler(async (req, res) => {
   const currentUser = await User.findById(req.user._id)
     .select('-password');
@@ -77,6 +85,7 @@ exports.selfGet = asyncHandler(async (req, res) => {
   return res.json(currentUser);
 });
 
+// Get information of a specific user (accessible to admin)
 exports.userGet = asyncHandler(async (req, res) => {
   if (req.user === null) {
     return res.status(403).json({ error: 'You are not signed in.' });
@@ -95,6 +104,7 @@ exports.userGet = asyncHandler(async (req, res) => {
   return res.status(403).json({ error: 'You must be an admin to get the info of another user.' });
 });
 
+// Endpoint to allow a user to join a chatroom
 exports.userJoinChatroom = [
   body('password', 'Password must not be empty.')
     .trim()
@@ -131,6 +141,7 @@ exports.userJoinChatroom = [
   }),
 ];
 
+// Endpoint to allow a user to leave a chatroom
 exports.userLeaveChatroom = asyncHandler(async (req, res) => {
   if (req.user === null) {
     return res.status(403).json({ error: 'You are not signed in.' });
@@ -151,7 +162,7 @@ exports.userLeaveChatroom = asyncHandler(async (req, res) => {
   return res.json({ token });
 });
 
-// Handle user create (sin-up) on POST.
+// Endpoint to sign up a new user
 exports.userCreatePost = [
   // Validate and sanitize fields.
   body('firstName', 'First name must not be empty.')
@@ -225,6 +236,7 @@ exports.userCreatePost = [
   }),
 ];
 
+// Endpoint to make a user an admin (accessible to admin)
 exports.makeUserAdmin = asyncHandler(async (req, res) => {
   if (req.user === null) {
     return res.status(403).json({ error: 'You are not signed in.' });

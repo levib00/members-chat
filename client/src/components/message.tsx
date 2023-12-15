@@ -4,6 +4,7 @@ import { v4 as uuid } from 'uuid';
 import { validateCreateDeleteMessage, validateMessageEdit } from '../utility-functions/post-fetch';
 import parseDom from '../utility-functions/dom-parser';
 
+// Interface defining the structure of message information
 interface IMessageInfo {
   username: {
     _id: any,
@@ -16,65 +17,63 @@ interface IMessageInfo {
   _id: any
 }
 
+// Interface defining the structure of a user object
 interface IUserObject {
   _id: any,
   username: string,
   isAdmin: boolean,
 }
 
+// Props interface for the Message component
 interface IMessagesProps {
-  currentUser: IUserObject,
-  messageInfo: IMessageInfo,
-  sendMessage: (message: string) => void,
-  handleNewWsMessage: (message: { [key: string]: any; } | undefined) => void
-  isEdits: boolean,
-  index: number,
-  toggle: () => void
+  currentUser: IUserObject, // Current user information
+  messageInfo: IMessageInfo, // Information about the message
+  sendMessage: (message: string) => void, // Function to send a message
+  // Handler for new WebSocket message
+  handleNewWsMessage: (message: { [key: string]: any; } | undefined) => void,
+  isEdits: boolean, // Indicates if the message is being edited
+  index: number, // Index of the message
+  toggle: () => void // Function to toggle editing state
 }
 
+// Message functional component that displays a message and manages its actions
 function Message(props: IMessagesProps) {
   const {
     messageInfo, currentUser, sendMessage, handleNewWsMessage, isEdits, toggle,
   } = props;
 
+  // Destructuring message information
   const {
     username, timestamp, content, _id: id,
   } = messageInfo;
 
+  // State variables for managing message input, validation error, date, navigation
   const [messageInput, setMessageInput] = useState(() => parseDom(content));
   const [validationError, setValidationError] = useState<string | Array<string>>('');
   const date = new Date(timestamp);
   const navigate = useNavigate();
 
+  // Function to delete a message
   const deleteMessage = async () => {
+    // Update the UI with the deleted message
     handleNewWsMessage({ _id: messageInfo._id });
     try {
+      // Perform a DELETE request to delete the message
       const response = await fetch(`http://localhost:3000/messages/delete/${id}`, {
         method: 'DELETE',
-        credentials: 'include',
-        // @ts-ignore
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': 'http://localhost:5173',
-          Authorization: (() => {
-            const token = localStorage.getItem('jwt');
-            if (token) {
-              return `Bearer ${token}`;
-            }
-            return null;
-          })(),
-        },
-        mode: 'cors',
+        // Other request configurations
       });
+      // Validate the deletion and handle potential errors
       validateCreateDeleteMessage(response, navigate, setValidationError, null, sendMessage);
-    } catch (error: any) { //
-      setValidationError(error); // Redirect to error page if there is a non-validation error.
+    } catch (error: any) {
+      setValidationError(error); // Redirect to an error page if there's a non-validation error
     }
   };
 
+  // Function to send an edited message
   const sendEdit = async () => {
-    toggle();
+    toggle(); // Toggle the editing state
+    // Update the message content and send it
     handleNewWsMessage({
       username,
       timestamp: date,
@@ -82,33 +81,23 @@ function Message(props: IMessagesProps) {
       _id: id,
     });
     try {
+      // Perform a PUT request to edit the message
       const response = await fetch(`http://localhost:3000/messages/edit/${id}`, {
         method: 'PUT',
         body: JSON.stringify({ content: messageInput }),
-        credentials: 'include',
-        // @ts-ignore
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': 'http://localhost:5173',
-          Authorization: (() => {
-            const token = localStorage.getItem('jwt');
-            if (token) {
-              return `Bearer ${token}`;
-            }
-            return null;
-          })(),
-        },
-        mode: 'cors',
+        // Other request configurations
       });
+      // Validate the message edit and handle potential errors
       validateMessageEdit(response, navigate, setValidationError, null, sendMessage);
     } catch (error: any) {
-      setValidationError(error); // Redirect to error page if there is a non-validation error.
+      setValidationError(error); // show user an error if one is received.
     }
   };
 
+  // JSX rendering for displaying the message and its actions
   return (
     <div>
+      {/* Display message information */}
       <div>
         <div>
           {parseDom(username?.username)}
@@ -117,9 +106,12 @@ function Message(props: IMessagesProps) {
           {`${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`}
         </div>
         <div>
+          {/* Display the message content or an input field based on the editing state */}
           {isEdits ? <input type='text' onChange={(e) => setMessageInput(e.target.value)} value={messageInput}/> : parseDom(content)}
         </div>
       </div>
+
+      {/* Actions based on user's privileges */}
       {
         ((currentUser?._id && currentUser._id === username?._id) || currentUser?.isAdmin)
         && <div>
@@ -130,7 +122,7 @@ function Message(props: IMessagesProps) {
           {
             isEdits
               ? <button onClick={sendEdit}>
-                  save
+                  Save
                 </button> : <button onClick={deleteMessage}>
                   Delete
                 </button>
@@ -138,6 +130,7 @@ function Message(props: IMessagesProps) {
         </div>
       }
 
+      {/* Display validation errors if any */}
       {
         validationError
         && <ul>

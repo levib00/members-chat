@@ -7,6 +7,9 @@ const User = require('../models/users');
 require('dotenv').config();
 
 const createNewMessageObject = (currentUser, updateFields) => {
+  // Function to create a new message object
+
+  // Destructuring needed properties from currentUser
   const {
     content,
     username,
@@ -16,6 +19,7 @@ const createNewMessageObject = (currentUser, updateFields) => {
     _id: id,
   } = currentUser;
 
+  // Create a new Message object with given properties
   const newMessage = new Message({
     content,
     username,
@@ -27,6 +31,7 @@ const createNewMessageObject = (currentUser, updateFields) => {
   return newMessage;
 };
 
+// Get all messages for a specific chatroom
 exports.messagesGet = asyncHandler(async (req, res) => {
   if (req.user === null) {
     res.status(403).json({ error: 'You are not signed in.' });
@@ -46,6 +51,7 @@ exports.messagesGet = asyncHandler(async (req, res) => {
   return res.status(403).json({ error: 'You need to be an admin or a member of any servers you are trying to read.' });
 });
 
+// Get a single message by ID
 exports.oneMessageGet = asyncHandler(async (req, res) => {
   if (req.user === null) {
     return res.status(403).json({ error: 'You are not signed in.' });
@@ -66,6 +72,7 @@ exports.oneMessageGet = asyncHandler(async (req, res) => {
   return res.status(403).json({ error: 'You need to be an admin or a member of any servers you are trying to read.' });
 });
 
+// Get messages for a specific user
 exports.userMessagesGet = asyncHandler(async (req, res) => {
   if (req.user === null) {
     return res.status(403).json({ error: 'You are not signed in.' });
@@ -81,6 +88,7 @@ exports.userMessagesGet = asyncHandler(async (req, res) => {
   return res.status(403).json({ error: 'You need to be an admin or the user who\'s message you are trying to get.' });
 });
 
+// Delete a message by ID
 exports.messageDelete = asyncHandler(async (req, res) => {
   if (req.user === null) {
     return res.status(403).json({ error: 'You are not signed in.' });
@@ -100,6 +108,7 @@ exports.messageDelete = asyncHandler(async (req, res) => {
   return res.status(403).json({ error: 'You need to be the user who sent the message you are trying to delete.' });
 });
 
+// Validate and edit a message by ID
 exports.messageEdit = [
   // Validate and sanitize fields.
   body('content', 'Message must not be empty.')
@@ -139,7 +148,7 @@ exports.messageEdit = [
   }),
 ];
 
-// Handle message create on POST.
+// Validate and create a new message for a specific chatroom
 exports.messagePost = [
   // Validate and sanitize fields.
   body('content', 'Message must not be empty.')
@@ -155,7 +164,7 @@ exports.messagePost = [
 
   asyncHandler(async (req, res) => {
     if (!req.user) {
-      return res.status(403).json({ error: 'You are not signed in.' })
+      return res.status(403).json({ error: 'You are not signed in.' });
     }
     function isObjectIdValid(id) {
       if (ObjectId.isValid(id)) {

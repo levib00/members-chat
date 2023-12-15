@@ -10,6 +10,7 @@ import Message from './message';
 import { IErrorObject } from '../App';
 import CreateChat from './create-chat';
 
+// Defining the structure of a message object
 interface IMessageObject {
   username: {
     _id: any,
@@ -28,8 +29,8 @@ interface IChatroomProps {
 
 const Chatroom = (props: IChatroomProps) => {
   const { setError } = props;
-  const { chatroomId } = useParams();
-  const navigate = useNavigate();
+  const { chatroomId } = useParams(); // Retrieving the chatroom ID from the URL parameters
+  const navigate = useNavigate(); // Accessing the navigation function from React Router
 
   const [messageInput, setMessageInput] = useState('');
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -43,10 +44,13 @@ const Chatroom = (props: IChatroomProps) => {
     shouldReconnect: () => true,
   }); // TODO: set to wss in prod also change other links to https
 
+  // Fetching user data using SWR (Stale-while-revalidate) pattern
   const { data: user } = useSWR('http://localhost:3000/users/user', getFetcher);
 
+  // Fetching chatroom messages data using SWR
   const { data: response, error: commentError, mutate } = useSWR(`http://localhost:3000/messages/chatroom/${chatroomId}`, getFetcher);
 
+  // Handling error states and redirection in case of errors
   useEffect(() => {
     setError(commentError);
     if (commentError) {
@@ -73,6 +77,7 @@ const Chatroom = (props: IChatroomProps) => {
   };
 
   const handleSendMessage = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    // Logic to handle sending a message in the chatroom
     if (messageInput.length < 1) {
       return;
     }
@@ -103,6 +108,7 @@ const Chatroom = (props: IChatroomProps) => {
   };
 
   const leaveChat = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    // Logic to handle leaving the chatroom
     submitPost(
       `http://localhost:3000/users/leave/${chatroomId}`,
       { content: messageInput },
@@ -123,18 +129,21 @@ const Chatroom = (props: IChatroomProps) => {
 
   return (
       <div>
+        {/* Rendering the modal for creating/editing a chatroom */}
         {(modalIsOpen
           && <div>
             <CreateChat chatroom={response?.chatroom} isAnEdit={true} />
             <button onClick={() => setModalIsOpen(false)}>cancel</button>
           </div>)}
         <div>
+          {/* Displaying chatroom details and buttons */}
           <h2>{response?.chatroom.roomName}</h2>
           {(response?.chatroom.createdBy === user?._id)
             ? <button onClick={() => setModalIsOpen(true)}>Edit chatroom</button> : null}
           <button onClick={(e) => leaveChat(e)}>Leave chat</button>
           {leavingError || null}
         </div>
+        {/* Mapping through messages and rendering each message */}
         {
           response?.messages?.map((message: IMessageObject, index: number) => <Message
             key={(uuid())}
@@ -147,6 +156,7 @@ const Chatroom = (props: IChatroomProps) => {
             isEdits={isEdits === index} />) // TODO: rename isEdits.
         }
         <div>
+          {/* Input box for sending messages and handling message sending */}
           <label htmlFor="message-box"></label>
           <input id="message-box" type="text" required min={1} max={300} onChange={(e) => setMessageInput(e.target.value)} value={messageInput} />
           <div>

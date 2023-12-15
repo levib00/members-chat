@@ -3,7 +3,9 @@ const bcrypt = require('bcryptjs');
 const Chatroom = require('../models/chatroom');
 const User = require('../models/users');
 
+// Function to create a new chatroom object
 const createNewChatroomObject = (currentUser, updateFields) => {
+  // Destructure needed properties from currentUser
   const {
     roomName,
     password,
@@ -13,6 +15,7 @@ const createNewChatroomObject = (currentUser, updateFields) => {
     _id: id,
   } = currentUser;
 
+  // Create a new Chatroom object with given properties
   const newChatroom = new Chatroom({
     roomName,
     password,
@@ -24,6 +27,7 @@ const createNewChatroomObject = (currentUser, updateFields) => {
   return newChatroom;
 };
 
+// Get all chatrooms
 exports.allChatroomsGet = asyncHandler(async (req, res) => {
   const chatrooms = await Chatroom.find()
     .select('-password');
@@ -33,6 +37,7 @@ exports.allChatroomsGet = asyncHandler(async (req, res) => {
   return res.json(chatrooms);
 });
 
+// Get a single chatroom by ID
 exports.oneChatroomGet = asyncHandler(async (req, res) => {
   const chatroom = await Chatroom.findById(req.params.chatroomId)
     .select('-password');
@@ -42,6 +47,7 @@ exports.oneChatroomGet = asyncHandler(async (req, res) => {
   return res.json(chatroom);
 });
 
+// Create a new chatroom
 exports.createChatroomPost = asyncHandler(async (req, res) => {
   // Extract the validation errors from a request.
   if (req.user === null) {
@@ -51,6 +57,7 @@ exports.createChatroomPost = asyncHandler(async (req, res) => {
     return res.status(400).json({ errors: req.ValidationErrors.array() });
   }
   return bcrypt.hash(req.body.password, 10, async (bcryptErr, hashedPassword) => {
+    // Handling bcrypt hashing error
     if (bcryptErr) {
       return res.status(403);
     }
@@ -65,6 +72,7 @@ exports.createChatroomPost = asyncHandler(async (req, res) => {
   });
 });
 
+// Delete a chatroom by ID
 exports.deleteChatroom = asyncHandler(async (req, res) => {
   if (req.user === null) {
     return res.status(403).json({ error: 'You are not signed in.' });
@@ -84,6 +92,7 @@ exports.deleteChatroom = asyncHandler(async (req, res) => {
   });
 });
 
+// Edit a chatroom by ID
 exports.editChatroom = asyncHandler(async (req, res) => {
   if (req.user === null) {
     return res.status(403).json({ error: 'You are not signed in.' });

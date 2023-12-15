@@ -1,5 +1,6 @@
 const { validationResult, body } = require('express-validator');
 
+// Export middleware functions for input validation on chatroom creation.
 module.exports = [
   body('roomName', 'Room name must not be empty.')
     .trim()
@@ -17,6 +18,7 @@ module.exports = [
     .escape(),
 
   (req, res, next) => {
+    // Store validation results in 'req.ValidationErrors'
     req.ValidationErrors = validationResult(req);
     return next();
   },

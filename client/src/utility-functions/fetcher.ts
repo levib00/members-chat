@@ -6,6 +6,7 @@ const getFetcher = async (url: string) => {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
+        // Gets JSON web token and format it for API.
         Authorization: (() => {
           const token = localStorage.getItem('jwt');
           if (token) {

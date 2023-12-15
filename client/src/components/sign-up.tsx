@@ -3,26 +3,32 @@ import { Link, useNavigate } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 import { validateSignUp, submitPost } from '../utility-functions/post-fetch';
 
+// Props interface for the SignUp component
 interface ISignUpProps {
-  hasAuth: boolean,
+  hasAuth: boolean; // Indicates whether the user is authenticated
 }
 
+// SignUp functional component for user registration
 const SignUp = (props: ISignUpProps) => {
-  const { hasAuth } = props;
+  const { hasAuth } = props; // Destructuring props
+
+  // States to manage form inputs and validation errors
   const [firstNameInput, setFirstNameInput] = useState('');
   const [lastNameInput, setLastNameInput] = useState('');
   const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
   const [validationError, setValidationError] = useState<string | Array<string>>('');
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Hook for navigating between pages
 
-  useEffect(() => { // Redirect if user is already logged in.
+  useEffect(() => {
+    // Redirect if user is already logged in
     if (hasAuth) {
       navigate('/');
     }
   });
 
+  // Function to handle user registration (sign-up)
   const signUp = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     submitPost(
       'http://localhost:3000/users/sign-up',
@@ -34,7 +40,7 @@ const SignUp = (props: ISignUpProps) => {
         passwordConfirmation: confirmPasswordInput,
       },
       e,
-      validateSignUp,
+      validateSignUp, // Validation function for sign-up
       setValidationError,
       navigate,
       null,
@@ -42,6 +48,7 @@ const SignUp = (props: ISignUpProps) => {
     );
   };
 
+  // JSX for the sign-up form
   return (
     <>
       <form action="">
@@ -67,16 +74,18 @@ const SignUp = (props: ISignUpProps) => {
         </div>
         <button onClick={(e) => signUp(e)}>Sign up</button>
         {
-          validationError
-          && <ul>
-            {
-              Array.isArray(validationError)
+          // Display validation errors if any
+          validationError && (
+            <ul>
+              {Array.isArray(validationError)
                 ? validationError.map((error: string) => <li key={uuid()}>{error}</li>)
                 : <li key={uuid()}>{validationError}</li>
-            }
-          </ul>
+              }
+            </ul>
+          )
         }
       </form>
+      {/* Link to navigate to log-in page if user already has an account */}
       <Link to='/' ><button>Already have an account?</button></Link>
     </>
   );
