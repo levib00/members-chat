@@ -29,30 +29,33 @@ const ChatroomList = () => {
       navigate('/log-in');
     }
   }, [userError]);
-
   return (
-    <>
-      <div>
+    <div className='main chat-list-page'>
+      <div className='admin-form'>
         {/* Rendering input to make another user an admin if the current user is an admin */}
         {user?.isAdmin && <>
-          <p>Enter a user's name to make them an admin:</p>
-          <div>
-            <input type='text' onChange={(e) => setAdminInput(e.target.value)} value={adminInput} />
+          <label htmlFor='admin-input'>Enter a username to make them an admin:</label>
+          <div className='admin-inputs'>
+            <input type='text' id='admin-input' onChange={(e) => setAdminInput(e.target.value)} value={adminInput} />
             <button>Submit</button>
           </div>
         </>}
       </div>
 
       {/* Link to create a new chatroom page */}
-      <Link to='/chatrooms/new'><button>Create a new chatroom</button></Link>
+      <Link className='create-chat-button' to='/chatrooms/new'>Create a new chatroom</Link>
 
       {/* Mapping through chatrooms and rendering ChatroomCard component for each */}
-      {user && chatrooms?.map(
-        (chatroom: IChatroomInfo) => <ChatroomCard key={uuid()}
-          chatroomInfo={chatroom}
-          hasUser={(user?.chatrooms.includes(chatroom._id) || user?.isAdmin)} />,
-      )}
-    </>
+      {(user && chatrooms)
+      && <div className="chat-list">
+        {chatrooms.map(
+          (chatroom: IChatroomInfo) => <ChatroomCard key={uuid()}
+            chatroomInfo={chatroom}
+            hasUser={(user?.chatrooms.includes(chatroom._id) || user?.isAdmin)} />,
+        )}
+        </div>
+        }
+    </div>
   );
 };
 

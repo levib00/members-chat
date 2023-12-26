@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
+import Icon from '@mdi/react';
+import {
+  mdiLock as locked,
+  mdiLockOpen as unlocked,
+} from '@mdi/js';
 import { submitPost, validateJoinChatroom } from '../utility-functions/post-fetch';
 
 // Defining the structure of chatroom information
@@ -54,10 +59,21 @@ const ChatroomCard = (props: IChatroomCardProps) => {
   };
 
   return (
-    <div>
-      <div>{roomName.charAt(0)}</div> {/* Displaying the first character of the roomName */}
+    <div className='chatroom-card'>
       <div>{roomName}</div> {/* Displaying the full roomName */}
-      <div>{isPublic ? 'public' : 'private'}</div> {/* Displaying if the room is public or private */}
+      <div>{isPublic ? <div className='lock-status locked'>
+        <Icon path={unlocked} size={0.8} />
+        <div>
+          public
+        </div>
+      </div> : <div className='lock-status locked'>
+        <Icon path={locked} size={1} />
+        <div>
+          private
+        </div>
+      </div>
+      }
+      </div> {/* Displaying if the room is public or private */}
       {isJoining ? <input type="password" onChange={(e) => setPasswordInput(e.target.value)} value={passwordInput} /> : null}
       <button onClick={(e) => clickJoin(e)}>{hasUser ? 'Chat' : 'Join'}</button> {/* Rendering button text based on user status */}
       {

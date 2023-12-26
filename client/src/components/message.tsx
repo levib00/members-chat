@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
+import Icon from '@mdi/react';
+import {
+  mdiSquareEditOutline as editIcon,
+  mdiDelete as deleteIcon,
+  mdiCloseThick as closeIcon,
+  mdiCheckBold as checkIcon,
+} from '@mdi/js';
 import { validateCreateDeleteMessage, validateMessageEdit } from '../utility-functions/post-fetch';
 import parseDom from '../utility-functions/dom-parser';
 
@@ -61,7 +68,21 @@ function Message(props: IMessagesProps) {
       // Perform a DELETE request to delete the message
       const response = await fetch(`http://localhost:3000/messages/delete/${id}`, {
         method: 'DELETE',
-        // Other request configurations
+        credentials: 'include',
+        // @ts-ignore
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': 'http://localhost:5173',
+          Authorization: (() => {
+            const token = localStorage.getItem('jwt');
+            if (token) {
+              return `Bearer ${token}`;
+            }
+            return null;
+          })(),
+        },
+        mode: 'cors',
       });
       // Validate the deletion and handle potential errors
       validateCreateDeleteMessage(response, navigate, setValidationError, null, sendMessage);
@@ -85,7 +106,21 @@ function Message(props: IMessagesProps) {
       const response = await fetch(`http://localhost:3000/messages/edit/${id}`, {
         method: 'PUT',
         body: JSON.stringify({ content: messageInput }),
-        // Other request configurations
+        credentials: 'include',
+        // @ts-ignore
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': 'http://localhost:5173',
+          Authorization: (() => {
+            const token = localStorage.getItem('jwt');
+            if (token) {
+              return `Bearer ${token}`;
+            }
+            return null;
+          })(),
+        },
+        mode: 'cors',
       });
       // Validate the message edit and handle potential errors
       validateMessageEdit(response, navigate, setValidationError, null, sendMessage);
@@ -94,42 +129,67 @@ function Message(props: IMessagesProps) {
     }
   };
 
+  // TODO: add confirmation on delete
+
   // JSX rendering for displaying the message and its actions
   return (
-    <div>
+    <div className='message'>
+      <div className='spacer'></div>
       {/* Display message information */}
       <div>
-        <div>
-          {parseDom(username?.username)}
-        </div>
-        <div>
-          {`${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`}
-        </div>
-        <div>
-          {/* Display the message content or an input field based on the editing state */}
-          {isEdits ? <input type='text' onChange={(e) => setMessageInput(e.target.value)} value={messageInput}/> : parseDom(content)}
-        </div>
-      </div>
-
-      {/* Actions based on user's privileges */}
+        <div className='inline'>
+          <div>
+            <div className='message-username'>
+              {parseDom(username?.username)}
+            </div>
+            <div className='message-date'>
+              {`${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`}
+            </div>
+          </div>
+          {/* Actions based on user's privileges */}
       {
         ((currentUser?._id && currentUser._id === username?._id) || currentUser?.isAdmin)
-        && <div>
+        && <div className='message-button-container'>
           {((currentUser?._id === username._id) && (
             isEdits
-              ? <button onClick={toggle}>Cancel</button> : <button onClick={toggle}>Edit</button>
+              ? <button onClick={toggle}>
+                <Icon path={closeIcon}
+                  title='more'
+                  size={1}
+                />
+                </button> : <button onClick={toggle}>
+                <Icon path={editIcon}
+                  title='more'
+                  size={1}
+                />
+                </button>
           ))}
           {
             isEdits
               ? <button onClick={sendEdit}>
-                  Save
+                  <Icon path={checkIcon}
+                  title='more'
+                  size={1}
+                />
                 </button> : <button onClick={deleteMessage}>
-                  Delete
+                <Icon path={deleteIcon}
+                  title='more'
+                  size={1}
+                />
                 </button>
             }
         </div>
       }
-
+        </div>
+        <div className='message-content'>
+          {/* Display the message content or an input field based on the editing state */}
+          {isEdits ? <textarea onChange={
+            (e) => setMessageInput(e.target.value)
+          } value={messageInput}/>
+            : parseDom(content)
+          }
+        </div>
+      </div>
       {/* Display validation errors if any */}
       {
         validationError

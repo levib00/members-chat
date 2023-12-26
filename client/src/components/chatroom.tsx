@@ -128,14 +128,14 @@ const Chatroom = (props: IChatroomProps) => {
   }, [lastJsonMessage]);
 
   return (
-      <div>
+      <div className='main chatroom-page'>
         {/* Rendering the modal for creating/editing a chatroom */}
         {(modalIsOpen
           && <div>
             <CreateChat chatroom={response?.chatroom} isAnEdit={true} />
             <button onClick={() => setModalIsOpen(false)}>cancel</button>
           </div>)}
-        <div>
+        <div className='chatroom-header'>
           {/* Displaying chatroom details and buttons */}
           <h2>{response?.chatroom.roomName}</h2>
           {(response?.chatroom.createdBy === user?._id)
@@ -144,23 +144,29 @@ const Chatroom = (props: IChatroomProps) => {
           {leavingError || null}
         </div>
         {/* Mapping through messages and rendering each message */}
-        {
-          response?.messages?.map((message: IMessageObject, index: number) => <Message
-            key={(uuid())}
-            index={index}
-            toggle={() => setIsEdits((s) => (s === index ? null : index))}
-            currentUser={ user }
-            messageInfo={ message }
-            sendMessage={ sendMessage }
-            handleNewWsMessage={ handleNewWsMessage }
-            isEdits={isEdits === index} />) // TODO: rename isEdits.
-        }
-        <div>
+        <div className='message-list'>
+          {response?.messages.length > 0 ? response?.messages?.toReversed().map(
+            (message: IMessageObject, index: number) => <Message
+              key={(uuid())}
+              index={index}
+              toggle={() => setIsEdits((s) => (s === index ? null : index))}
+              currentUser={ user }
+              messageInfo={ message }
+              sendMessage={ sendMessage }
+              handleNewWsMessage={ handleNewWsMessage }
+              isEdits={isEdits === index} />,
+          ) // TODO: rename isEdits.
+            : <div className='no-messages-fallback message'>Be the first to send a message!</div>
+          }
+        </div>
+        <div className='create-message'>
           {/* Input box for sending messages and handling message sending */}
-          <label htmlFor="message-box"></label>
-          <input id="message-box" type="text" required min={1} max={300} onChange={(e) => setMessageInput(e.target.value)} value={messageInput} />
-          <div>
+          <div className='message-form'>
+            <label className='message-box-label' htmlFor="message-box"></label>
+            <textarea id="message-box" className='message-box' required minLength={1} maxLength={300} onChange={(e) => setMessageInput(e.target.value)} value={messageInput} />
             <button onClick={(e) => handleSendMessage(e)}>Send</button>
+          </div>
+          <div>
             {
               validationError
               && <ul>

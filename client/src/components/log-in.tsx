@@ -43,16 +43,16 @@ const LogIn = (props: ILogInProps) => {
 
   // JSX rendering for the LogIn component
   return (
-    <>
+    <div className='main log-in-page'>
       {/* Login form */}
-      <form action="">
-        <div>
+      <form action="" className='log-in-form'>
+        <div className='log-in-input'>
           <label htmlFor="username">Username:</label>
           <input type="text" id="username" required onChange={(e) => setUsernameInput(e.target.value)} value={usernameInput}/>
         </div>
-        <div>
+        <div className='log-in-input'>
           <label htmlFor="password">Password:</label>
-          <input type="text" id="password" required onChange={(e) => setPasswordInput(e.target.value)} value={passwordInput}/>
+          <input type="password" id="password" required onChange={(e) => setPasswordInput(e.target.value)} value={passwordInput}/>
         </div>
         <button onClick={(e) => logIn(e)}>Log in</button>
 
@@ -71,8 +71,8 @@ const LogIn = (props: ILogInProps) => {
       </form>
 
       {/* Link to sign-up page */}
-      <Link to='/sign-up'><button>Don't have an account?</button></Link>
-    </>
+      <Link to='/sign-up'>Don't have an account?</Link>
+    </div>
   );
 };
 

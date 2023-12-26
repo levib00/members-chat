@@ -12,7 +12,7 @@ const Home = (props: IHomeProps) => {
 
   // Rendering different content based on the authentication status
   return (
-    <div>
+    <div className='main home-page'>
       {/* Conditional rendering based on the 'hasAuth' prop */}
       {!hasAuth ? ( // Display when the user doesn't have authentication
         <>

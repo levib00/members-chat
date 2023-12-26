@@ -50,25 +50,25 @@ const SignUp = (props: ISignUpProps) => {
 
   // JSX for the sign-up form
   return (
-    <>
-      <form action="">
-        <div>
+    <div className='main sign-up-page'>
+      <form action="" className='sign-up-form'>
+        <div className='sign-up-input'>
           <label htmlFor='first-name'>First name:</label>
           <input type='text' id='first-name' required onChange={(e) => setFirstNameInput(e.target.value)} value={firstNameInput}/>
         </div>
-        <div>
+        <div className='sign-up-input'>
           <label htmlFor='last-name'>Last name:</label>
           <input type='text' id='last-name' required onChange={(e) => setLastNameInput(e.target.value)} value={lastNameInput}/>
         </div>
-        <div>
+        <div className='sign-up-input'>
           <label htmlFor='username'>Username:</label>
           <input type='text' id='username' required onChange={(e) => setUsernameInput(e.target.value)} value={usernameInput}/>
         </div>
-        <div>
+        <div className='sign-up-input'>
           <label htmlFor='password'>Password:</label>
           <input type='text' id='password' required onChange={(e) => setPasswordInput(e.target.value)} value={passwordInput}/>
         </div>
-        <div>
+        <div className='sign-up-input'>
           <label htmlFor='confirm-password'>Confirm Password:</label>
           <input type="text" id='confirm-password' required onChange={(e) => setConfirmPasswordInput(e.target.value)} value={confirmPasswordInput}/>
         </div>
@@ -86,8 +86,8 @@ const SignUp = (props: ISignUpProps) => {
         }
       </form>
       {/* Link to navigate to log-in page if user already has an account */}
-      <Link to='/' ><button>Already have an account?</button></Link>
-    </>
+      <Link to='/log-in' >Already have an account?</Link>
+    </div>
   );
 };
 
