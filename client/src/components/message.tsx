@@ -39,14 +39,23 @@ interface IMessagesProps {
   // Handler for new WebSocket message
   handleNewWsMessage: (message: { [key: string]: any; } | undefined) => void,
   isEdits: boolean, // Indicates if the message is being edited
+  deleteConfirmation: boolean,
   index: number, // Index of the message
-  toggle: () => void // Function to toggle editing state
+  toggleEditing: () => void // Function to toggle editing state
+  toggleDeleteModal: () => void
 }
 
 // Message functional component that displays a message and manages its actions
 function Message(props: IMessagesProps) {
   const {
-    messageInfo, currentUser, sendMessage, handleNewWsMessage, isEdits, toggle,
+    messageInfo,
+    currentUser,
+    sendMessage,
+    handleNewWsMessage,
+    isEdits,
+    deleteConfirmation,
+    toggleEditing,
+    toggleDeleteModal,
   } = props;
 
   // Destructuring message information
@@ -63,6 +72,7 @@ function Message(props: IMessagesProps) {
   // Function to delete a message
   const deleteMessage = async () => {
     // Update the UI with the deleted message
+    toggleDeleteModal();
     handleNewWsMessage({ _id: messageInfo._id });
     try {
       // Perform a DELETE request to delete the message
@@ -93,7 +103,7 @@ function Message(props: IMessagesProps) {
 
   // Function to send an edited message
   const sendEdit = async () => {
-    toggle(); // Toggle the editing state
+    toggleEditing(); // Toggle the editing state
     // Update the message content and send it
     handleNewWsMessage({
       username,
@@ -129,11 +139,19 @@ function Message(props: IMessagesProps) {
     }
   };
 
-  // TODO: add confirmation on delete
-
   // JSX rendering for displaying the message and its actions
   return (
     <div className='message'>
+      { deleteConfirmation && <div className='delete-modal'>
+        <div className='modal-text'>
+          <p>Are you sure you want to delete this message?</p>
+          <p>"{parseDom(content)}"</p>
+        </div>
+        <div className='modal-buttons'>
+          <button onClick={deleteMessage}>confirm</button>
+          <button onClick={toggleDeleteModal}>cancel</button>
+        </div>
+      </div>}
       <div className='spacer'></div>
       {/* Display message information */}
       <div>
@@ -152,12 +170,12 @@ function Message(props: IMessagesProps) {
         && <div className='message-button-container'>
           {((currentUser?._id === username._id) && (
             isEdits
-              ? <button onClick={toggle}>
+              ? <button onClick={toggleEditing}>
                 <Icon path={closeIcon}
                   title='more'
                   size={1}
                 />
-                </button> : <button onClick={toggle}>
+                </button> : <button onClick={toggleEditing}>
                 <Icon path={editIcon}
                   title='more'
                   size={1}
@@ -171,7 +189,7 @@ function Message(props: IMessagesProps) {
                   title='more'
                   size={1}
                 />
-                </button> : <button onClick={deleteMessage}>
+                </button> : <button onClick={toggleDeleteModal}>
                 <Icon path={deleteIcon}
                   title='more'
                   size={1}
