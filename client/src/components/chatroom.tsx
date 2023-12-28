@@ -36,7 +36,8 @@ const Chatroom = (props: IChatroomProps) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [validationError, setValidationError] = useState<string | string[]>('');
   const [leavingError, setLeavingError] = useState<string | string[]>('');
-  const [isEdits, setIsEdits] = useState<null | number>(null);
+  const [isBeingEdited, setIsBeingEdited] = useState<null | number>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<null | number>(null);
 
   const [jwt] = useState(localStorage.getItem('jwt'));
   const { sendMessage, lastJsonMessage } = useWebSocket(`ws://localhost:3000/ws?token=${jwt}&chatroomId=${chatroomId}`, {
@@ -138,10 +139,12 @@ const Chatroom = (props: IChatroomProps) => {
         <div className='chatroom-header'>
           {/* Displaying chatroom details and buttons */}
           <h2>{response?.chatroom.roomName}</h2>
-          {(response?.chatroom.createdBy === user?._id)
-            ? <button onClick={() => setModalIsOpen(true)}>Edit chatroom</button> : null}
-          <button onClick={(e) => leaveChat(e)}>Leave chat</button>
-          {leavingError || null}
+          <div className='chatroom-header-buttons'>
+            {(response?.chatroom.createdBy === user?._id)
+              ? <button onClick={() => setModalIsOpen(true)}>Edit chatroom</button> : null}
+            <button onClick={(e) => leaveChat(e)}>Leave chat</button>
+            {leavingError || null}
+          </div>
         </div>
         {/* Mapping through messages and rendering each message */}
         <div className='message-list'>
@@ -149,13 +152,15 @@ const Chatroom = (props: IChatroomProps) => {
             (message: IMessageObject, index: number) => <Message
               key={(uuid())}
               index={index}
-              toggle={() => setIsEdits((s) => (s === index ? null : index))}
+              toggleEditing={() => setIsBeingEdited((s) => (s === index ? null : index))}
+              toggleDeleteModal={() => setDeleteConfirmation((s) => (s === index ? null : index))}
               currentUser={ user }
               messageInfo={ message }
               sendMessage={ sendMessage }
               handleNewWsMessage={ handleNewWsMessage }
-              isEdits={isEdits === index} />,
-          ) // TODO: rename isEdits.
+              isBeingEdited={isBeingEdited === index}
+              deleteConfirmation={deleteConfirmation === index} />,
+          )
             : <div className='no-messages-fallback message'>Be the first to send a message!</div>
           }
         </div>
