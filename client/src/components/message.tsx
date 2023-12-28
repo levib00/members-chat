@@ -38,11 +38,11 @@ interface IMessagesProps {
   sendMessage: (message: string) => void, // Function to send a message
   // Handler for new WebSocket message
   handleNewWsMessage: (message: { [key: string]: any; } | undefined) => void,
-  isEdits: boolean, // Indicates if the message is being edited
+  isBeingEdited: boolean, // Indicates if the message is being edited
   deleteConfirmation: boolean,
   index: number, // Index of the message
-  toggleEditing: () => void // Function to toggle editing state
-  toggleDeleteModal: () => void
+  toggleEditing: () => void, // Function to toggle editing state
+  toggleDeleteModal: () => void,
 }
 
 // Message functional component that displays a message and manages its actions
@@ -52,7 +52,7 @@ function Message(props: IMessagesProps) {
     currentUser,
     sendMessage,
     handleNewWsMessage,
-    isEdits,
+    isBeingEdited,
     deleteConfirmation,
     toggleEditing,
     toggleDeleteModal,
@@ -169,7 +169,7 @@ function Message(props: IMessagesProps) {
         ((currentUser?._id && currentUser._id === username?._id) || currentUser?.isAdmin)
         && <div className='message-button-container'>
           {((currentUser?._id === username._id) && (
-            isEdits
+            isBeingEdited
               ? <button onClick={toggleEditing}>
                 <Icon path={closeIcon}
                   title='more'
@@ -183,7 +183,7 @@ function Message(props: IMessagesProps) {
                 </button>
           ))}
           {
-            isEdits
+            isBeingEdited
               ? <button onClick={sendEdit}>
                   <Icon path={checkIcon}
                   title='more'
@@ -201,7 +201,7 @@ function Message(props: IMessagesProps) {
         </div>
         <div className='message-content'>
           {/* Display the message content or an input field based on the editing state */}
-          {isEdits ? <textarea onChange={
+          {isBeingEdited ? <textarea onChange={
             (e) => setMessageInput(e.target.value)
           } value={messageInput}/>
             : parseDom(content)
