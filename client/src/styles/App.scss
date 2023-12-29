@@ -1,14 +1,98 @@
-@mixin button {
+// Common styles
+$primaryTextColor: rgba(255, 255, 255, 0.87);
+$backgroundColor: #242424;
+$secondaryBackgroundColor: #444444;
+$accentColor: #1a1a1a;
+$borderColor: #a2a2a2;
+$hoverBorderColor: #646cff;
+$paddingBottom: clamp(60px, 20vw, 90px);
+
+@mixin button-styles {
   border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: $accentColor;
   cursor: pointer;
   transition: border-color 0.25s;
+  &:hover {
+    border-color: $hoverBorderColor;
+  }
+
+  &:focus,
+  &:focus-visible {
+    outline: 4px auto -webkit-focus-ring-color;
+  }
 }
+
+@mixin center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// Reusable button mixin
+@mixin main-button {
+  @include button-styles;
+  color: white;
+}
+
+// Reusable link styles
+@mixin link-styles {
+  color: white;
+  text-decoration: none;
+  @include button-styles();
+
+  &:visited {
+    color: white;
+  }
+}
+
+// Shared properties for forms
+@mixin form-styles {
+  @include center();
+  flex-direction: column;
+  height: 100%;
+  padding-bottom: $paddingBottom;
+  .form-container {
+    @include center();
+    flex-direction: column;
+    gap: 14px;
+    background-color: $accentColor;
+    padding: 25px;
+    border-radius: 8px;
+
+    .form-input {
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    div {
+      display: flex;
+      gap: 8px;
+    }
+
+    button {
+      margin-top: 12px;
+      background-color: $secondaryBackgroundColor;
+      &:hover {
+        border: $hoverBorderColor 1px solid;
+      }
+    }
+  }
+}
+
+button {
+  @include button-styles();
+}
+
+a {
+  @include link-styles();
+}
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -16,7 +100,7 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: $backgroundColor;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -31,25 +115,14 @@ body {
   height: 100vh;
 }
 .home-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  @include center();
 }
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
 }
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
 #root {
   box-sizing: border-box;
-  margin: 0 2%;
   width: 100%;
   text-align: center;
 }
@@ -64,28 +137,27 @@ nav, footer {
   left: 0;
   margin: 10px 0;
 }
+.github-link {
+  all: unset;
+  background-color: transparent;
+  border: 0;
+  padding: 0;
+  color: $primaryTextColor;
+  cursor: pointer;
+  text-decoration: underline;
+}
 .hamburger-menu {
   position: absolute;
   bottom: clamp(60px, 18vw, 67px);;
   width: 100%;
-  background-color: #444444;
+  background-color: $secondaryBackgroundColor;
   display: flex;
   flex-direction: column;
   text-decoration: none;
   .menu-nav {
     margin-bottom: 10px;
-    border: 2px solid #a2a2a2;
+    border: 2px solid $borderColor;
     border-radius: 8px;
-  }
-  
-  .github-link {
-    background-color: transparent;
-    border: 0;
-    padding: 0;
-    color: #ffffff;
-  }
-  .github-link:visited {
-    color: #ffffff;
   }
   p {
     margin: 0;
@@ -109,7 +181,7 @@ nav {
     display: flex;
     justify-content: space-between;
     align-items: end;
-    background-color: #444444;
+    background-color: $secondaryBackgroundColor;
     padding-top: $spacing;
     height: 100%;
     width: 100%;
@@ -118,45 +190,45 @@ nav {
     }
   }
   .main-nav-button, .menu-nav {
+    @include link-styles();
     display: flex;
     height: 100%;
     border: 0;
-    border-top: 2px solid #a2a2a2;
+    border-top: 2px solid $borderColor;
     padding: 0.6em 1.2em;
     font-size: 1em;
     font-weight: 500;
     font-family: inherit;
-    background-color: #1a1a1a;
-    color: white;
+    background-color: $accentColor;
     text-decoration: none;
-    cursor: pointer;
-    transition: border-color 0.25s;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-
-  }
-  :visited {
-    color: white;
-  }
-  :hover {
-    border-color: #646cff;
-    color: white;
-  }
-  :focus,
-  :focus-visible {
-    outline: 4px auto -webkit-focus-ring-color;
+    
+    border-radius: 0px;
+    &:visited {
+      color: white;
+    }
+    &:hover {
+      border-color: $hoverBorderColor;
+      color: white;
+    }
+    &:focus,
+    &:focus-visible {
+      outline: 4px auto -webkit-focus-ring-color;
+    }
   }
   .more-menu {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    @include center();
   }
   .more-menu:hover {
-    border-top: 2px solid #646cff;
+    border-top: 2px solid $hoverBorderColor;
     border-left: none;
     border-right: none;
     border-bottom: none;
+  }
+  .side-nav {
+    display: none;
   }
 }
 .main {
@@ -166,15 +238,13 @@ nav {
   width: 100%;
   height: 100%;
   min-height: 50px;
-  padding-bottom: clamp(60px, 20vw, 90px);
+  padding-bottom: $paddingBottom;
   overflow-y: auto;
 }
 .admin-form {
   display: flex;
   margin-bottom: 10px;
-  
 }
-
 a:visited {
   color: white;
 }
@@ -184,16 +254,13 @@ a:visited {
   flex-direction: column;
   align-items: center;
   padding-top: 24px;
-  padding-bottom: clamp(60px, 20vw, 90px);
+  padding-bottom: $paddingBottom;
   width: 100%;
   height: 100%;
   a {
-    @include button();
-    color: white;
-    text-decoration: none;
+    @include link-styles();
     margin: 10px auto 20px auto;
   }
-  
   .chat-list {
     box-sizing: border-box;
     display: grid;
@@ -213,12 +280,6 @@ footer {
 footer > p {
   margin: 0;
 }
-.side-nav {
-  display: none;
-}
-button {
-  @include button();
-}
 .chatroom-card {
   display: flex;
   min-height: 150px;
@@ -226,61 +287,25 @@ button {
   justify-content: space-around;
   align-items: center;
   padding: 6px 0;
-  background-color: #1a1a1a;
+  background-color: $accentColor;
   margin: 10px;
   border-radius: 8px;
   button {
-    background-color: #444444;
+    background-color: $secondaryBackgroundColor;
   }
-}
-button:hover, .create-chat-button:hover {
-  border: #646cff 1px solid;
 }
 .lock-status {
   display: flex;
   gap: 8px;
   align-items: center;
 }
-.create-chat-form {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  padding-bottom: clamp(60px, 20vw, 90px);
-  .create-chat-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    background-color: #1a1a1a;
-    padding: 25px;
-    border-radius: 8px;
-    .create-chat-input {
-      display: flex;
-      width: 100%;
-      justify-content: space-between;
-    }
-    div {
-      display: flex;
-      gap: 8px;
-    }
-    button {
-      margin-top: 10px;
-      background-color: #444444;
-    }
-    button:hover {
-      border: #646cff 1px solid;
-    }
-  }
-}
+
 .chatroom-page {
   padding-left: 10px;
   padding-right: 10px;
   overflow-y: auto;
   .create-message {
-    background-color: #1a1a1a;
+    background-color: $accentColor;
     margin-top: 10px;
     width: 100%;
     margin-bottom: 10px;
@@ -288,10 +313,18 @@ button:hover, .create-chat-button:hover {
   .chatroom-header {
     display: flex;
     width: 100%;
-    margin-top: 32px;
+    margin-top: 24px;
+    flex-direction: column;
+    gap: 10px;
     justify-content: space-between;
     h2 {
       margin: 0;
+    }
+    .chatroom-header-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      width: auto;
     }
   }
   .message-form {
@@ -300,17 +333,17 @@ button:hover, .create-chat-button:hover {
     justify-content: space-between;
     width: 100%;
     button {
-      border: #a2a2a2 1px solid;
+      border: $borderColor 1px solid;
       border-radius: 0;
       height: 42px;
-    }
-    button:hover {
-      border-color: #646cff;
+      &:hover {
+        border-color: $hoverBorderColor;
+      }
     }
   }
   .message-box {
     width: 100%;
-    border: #a2a2a2 1px solid;
+    border: $borderColor 1px solid;
     height: 42px;
     margin: 0;
   }
@@ -324,18 +357,51 @@ button:hover, .create-chat-button:hover {
   display: flex;
   flex-direction: column-reverse;
   align-items: center;
-  background-color: #a2a2a2;
+  background-color: $borderColor;
   min-height: 300px;
   height: 100%;
-  margin: 30px 0 10px;
+  margin: 24px 0 10px;
   width: 100%;
   gap: 1px;
   overflow-y: auto;
-  background-color: #1a1a1a;
+  background-color: $accentColor;
+  .message:last-child {
+    .spacer {
+      background-color: transparent;
+    }
+  }
   .message {
     padding: 10px 5px;
-    background-color: #1a1a1a;
+    background-color: $accentColor;
     width: 100%;
+    .delete-modal {
+      p {
+        margin: 0;
+      }
+      .modal-text {
+        display: flex;
+        gap: 10px;
+        flex-direction: column;
+      }
+      .modal-buttons {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        justify-content: center;
+      }
+      position: absolute;
+      background-color: $secondaryBackgroundColor;
+      border: white 1px solid;
+      top: calc(50% - 100px);
+      left: calc(50% - 47vw);
+      height: 200px;
+      width: 94vw;
+      z-index: 99;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+    }
     .spacer {
       position: relative;
       margin-bottom: 5px;
@@ -343,7 +409,7 @@ button:hover, .create-chat-button:hover {
       left: 2%;
       width: 96%;
       height: 1px;
-      background-color: #444444;
+      background-color: $secondaryBackgroundColor;
     }
     .message-button-container {
       width: max-content;
@@ -351,11 +417,9 @@ button:hover, .create-chat-button:hover {
       margin: 0px 5px 0 0;
       gap: 5px;
       button {
-        background-color: #444444;
+        background-color: $secondaryBackgroundColor;
         width: min-content;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        @include center();
         height: min-content;
         width: min-content;
         padding: 0;
@@ -390,80 +454,14 @@ button:hover, .create-chat-button:hover {
   }
   .no-messages-fallback {
     height: 100% !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    @include center();
   }
 }
-.sign-up-page { // TODO: very similar to other forms
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  padding-bottom: clamp(60px, 20vw, 90px);
-  .sign-up-form {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    background-color: #1a1a1a;
-    padding: 25px;
-    border-radius: 8px;
-    .sign-up-input {
-      display: flex;
-      width: 100%;
-      justify-content: space-between;
-    }
-    div {
-      display: flex;
-      gap: 8px;
-    }
-    button {
-      margin-top: 12px;
-      background-color: #444444;
-    }
-    button:hover {
-      border: #646cff 1px solid;
-    }
+.sign-up-page, .log-in-page, .create-chat-page {
+  @include form-styles();
+  a {
+    margin-top: 25px;
   }
-}
-
-.log-in-page { // TODO: very similar to other forms
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  padding-bottom: clamp(60px, 20vw, 90px);
-  .log-in-form {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    background-color: #1a1a1a;
-    padding: 25px;
-    border-radius: 8px;
-    .log-in-input {
-      display: flex;
-      width: 100%;
-      justify-content: space-between;
-    }
-    div {
-      display: flex;
-      gap: 8px;
-    }
-    button {
-      margin-top: 12px;
-      background-color: #444444;
-    }
-    button:hover {
-      border: #646cff 1px solid;
-    }
-  }
-  
 }
 svg {
   flex-shrink: 0;
@@ -477,7 +475,7 @@ svg {
   }
   .chat-list-page {    
     .chat-list {
-      grid-template-columns: repeat( auto-fill, minmax(200px, 1fr) );
+      grid-template-columns: repeat( auto-fill, minmax(300px, 1fr) );
     }
   }
 }
@@ -495,7 +493,10 @@ svg {
     top: 0;
     margin-top: 0;
     a:hover, button:hover {
-      border-bottom: #646cff 1px solid !important;
+      border-bottom: $hoverBorderColor 1px solid !important;
+    }
+    .side-nav {
+      display: block;
     }
   }
   .main {
@@ -525,8 +526,11 @@ svg {
       min-height: 100%;
     }
   }
-  .sign-up-page, .log-in-page, .create-chat-container {
-    margin-top: 100px;
+  .sign-up-page, .log-in-page, .create-chat-page {
+    margin-top: 200px;
+    .form-container {
+      width: 350px;
+    }
   }
   .more-menu {
     display: none !important;
@@ -540,7 +544,7 @@ svg {
     align-items: center;
   }
   .side-nav:hover {
-    border-bottom: 2px solid #646cff;
+    border-bottom: 2px solid $hoverBorderColor;
     border-left: none;
     border-right: none;
     border-bottom: none;
@@ -552,14 +556,14 @@ svg {
   footer {
     margin: 0;
     height: 70px;
-    background-color: #1a1a1a;
+    background-color: $accentColor;
     display: flex;
     justify-content: center;
     align-items: center;
   }
   .main-nav-button, .menu-nav {
     border-top: 0 !important;
-    border-bottom: 2px solid #a2a2a2 !important;
+    border-bottom: 2px solid $borderColor !important;
   }
   html {
     height: fit-content;
