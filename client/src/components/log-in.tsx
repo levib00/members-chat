@@ -45,12 +45,12 @@ const LogIn = (props: ILogInProps) => {
   return (
     <div className='main log-in-page'>
       {/* Login form */}
-      <form action="" className='log-in-form'>
-        <div className='log-in-input'>
+      <form action="" className='log-in-form form-container'>
+        <div className='log-in-input form-input'>
           <label htmlFor="username">Username:</label>
           <input type="text" id="username" required onChange={(e) => setUsernameInput(e.target.value)} value={usernameInput}/>
         </div>
-        <div className='log-in-input'>
+        <div className='log-in-input form-input'>
           <label htmlFor="password">Password:</label>
           <input type="password" id="password" required onChange={(e) => setPasswordInput(e.target.value)} value={passwordInput}/>
         </div>

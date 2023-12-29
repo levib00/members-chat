@@ -87,39 +87,39 @@ const CreateChat = (props: ICreateChatProps) => {
   };
 
   return (
-    <form className='main create-chat-form'>
-      {/* Input fields for chatroom details */}
-      <div className='create-chat-container'>
-        <div className='create-chat-input'>
-          <label htmlFor='chat-name'>Chat Name:</label>
-          <input type='text' id='chat-name' required onChange={(e) => setChatNameInput(e.target.value)} value={chatNameInput}></input>
-        </div>
-        <div className='create-chat-input'>
-          <label htmlFor='password'>Password:</label>
-          <input disabled={isPublic} type='password' id='password' onChange={(e) => setPasswordInput(e.target.value)} value={isPublic ? '' : passwordInput}></input>
-        </div>
-        <div className='create-chat-input'>
-          <label htmlFor='confirm-password'>Confirm password:</label>
-          <input disabled={isPublic} type='password' id='confirm-password' onChange={(e) => setConfirmPasswordInput(e.target.value)} value={isPublic ? '' : confirmPasswordInput}></input>
-        </div>
-        <div className='create-chat-input'>
-          <label htmlFor="isPublic">Do you want this server to be public?</label>
-          <input id="isPublic" type="checkbox" onChange={(e) => setIsPublic(e.target.checked)} checked={isPublic} />
-        </div>
-        <button onClick={(e) => submitForm(e)}>{isAnEdit ? 'Submit changes' : 'Create chat'}</button>
-        {/* Displaying validation errors if any */}
-        {
-          validationError
-          && <ul>
-            {
-              Array.isArray(validationError)
-                ? validationError.map((error: string) => <li key={uuid()}>{error}</li>)
-                : <li key={uuid()}>{validationError}</li>
-            }
-          </ul>
-        }
-      </div>
-    </form>
+    <div className='main create-chat-page'>
+      <form className='create-chat-form form-container'>
+        {/* Input fields for chatroom details */}
+          <div className='create-chat-input form-input'>
+            <label htmlFor='chat-name'>Chat Name:</label>
+            <input type='text' id='chat-name' required onChange={(e) => setChatNameInput(e.target.value)} value={chatNameInput}></input>
+          </div>
+          <div className='create-chat-input form-input'>
+            <label htmlFor='password'>Password:</label>
+            <input disabled={isPublic} type='password' id='password' onChange={(e) => setPasswordInput(e.target.value)} value={isPublic ? '' : passwordInput}></input>
+          </div>
+          <div className='create-chat-input form-input'>
+            <label htmlFor='confirm-password'>Confirm password:</label>
+            <input disabled={isPublic} type='password' id='confirm-password' onChange={(e) => setConfirmPasswordInput(e.target.value)} value={isPublic ? '' : confirmPasswordInput}></input>
+          </div>
+          <div className='create-chat-input form-input'>
+            <label htmlFor="isPublic">Do you want this server to be public?</label>
+            <input id="isPublic" type="checkbox" onChange={(e) => setIsPublic(e.target.checked)} checked={isPublic} />
+          </div>
+          <button onClick={(e) => submitForm(e)}>{isAnEdit ? 'Submit changes' : 'Create chat'}</button>
+          {/* Displaying validation errors if any */}
+          {
+            validationError
+            && <ul>
+              {
+                Array.isArray(validationError)
+                  ? validationError.map((error: string) => <li key={uuid()}>{error}</li>)
+                  : <li key={uuid()}>{validationError}</li>
+              }
+            </ul>
+          }
+      </form>
+    </div>
   );
 };
 
