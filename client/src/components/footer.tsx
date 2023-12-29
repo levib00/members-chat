@@ -4,7 +4,7 @@ const Footer = () => (
   <footer>
     <p>
       Made by{' '}
-      <a href="https://github.com/levib00">levib00 on GitHub</a>
+      <a className='github-link' href="https://github.com/levib00">levib00 on GitHub</a>
     </p>
   </footer>
 );
