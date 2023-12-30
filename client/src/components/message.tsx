@@ -172,12 +172,12 @@ function Message(props: IMessagesProps) {
             isBeingEdited
               ? <button onClick={toggleEditing}>
                 <Icon path={closeIcon}
-                  title='more'
+                  title='close'
                   size={1}
                 />
                 </button> : <button onClick={toggleEditing}>
                 <Icon path={editIcon}
-                  title='more'
+                  title='edit'
                   size={1}
                 />
                 </button>
@@ -186,12 +186,12 @@ function Message(props: IMessagesProps) {
             isBeingEdited
               ? <button onClick={sendEdit}>
                   <Icon path={checkIcon}
-                  title='more'
+                  title='confirm'
                   size={1}
                 />
                 </button> : <button onClick={toggleDeleteModal}>
                 <Icon path={deleteIcon}
-                  title='more'
+                  title='cancel'
                   size={1}
                 />
                 </button>

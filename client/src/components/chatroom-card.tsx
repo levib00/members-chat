@@ -62,12 +62,12 @@ const ChatroomCard = (props: IChatroomCardProps) => {
     <div className='chatroom-card'>
       <div>{roomName}</div> {/* Displaying the full roomName */}
       <div>{isPublic ? <div className='lock-status locked'>
-        <Icon path={unlocked} size={0.8} />
+        <Icon path={unlocked} size={1} title={'unlocked'} />
         <div>
           public
         </div>
       </div> : <div className='lock-status locked'>
-        <Icon path={locked} size={1} />
+        <Icon path={locked} size={1} title={'locked'} />
         <div>
           private
         </div>

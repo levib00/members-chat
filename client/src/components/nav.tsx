@@ -56,17 +56,17 @@ function NavBar(props: INavProps) {
               <div>Home</div></Link>
             <Link className='side-nav main-nav-button' to={'/log-in'}>
               <Icon path={login}
-                title='more'
+                title='login'
                 size={1}
               />
               <div>Log in</div>
             </Link>
             <Link className='side-nav main-nav-button' to={'/sign-up'}>
-            <Icon path={signUp} /* //TODO: change names of titles */
-                title='more'
+            <Icon path={signUp}
+                title='sign-up'
                 size={1}
               />
-              Sign up
+              <div>Sign up</div>
               </Link>
             <button onClick={() => setIsMoreHidden(!isMoreHidden)} className='more-menu main-nav-button'>
               <Icon path={moreDots}
@@ -106,7 +106,7 @@ function NavBar(props: INavProps) {
             </Link>
             <button className='side-nav main-nav-button' onClick={signOut}>
             <Icon path={logout}
-                title='more'
+                title='logout'
                 size={1}
               />
               <div>Log Out</div>
