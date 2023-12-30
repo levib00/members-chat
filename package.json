@@ -13,6 +13,8 @@
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
+    "@mdi/js": "^7.3.67",
+    "@mdi/react": "^1.6.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.6",
     "@types/express-session": "^1.17.10",
@@ -84,6 +86,7 @@
     "jest-resolve": "^29.7.0",
     "jsdom": "^22.1.0",
     "mockingoose": "^2.16.2",
+    "sass": "^1.69.5",
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.1",
     "typescript": "^5.3.2",
