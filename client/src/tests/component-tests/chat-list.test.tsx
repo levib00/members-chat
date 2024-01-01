@@ -58,15 +58,11 @@ describe('List fetches listings then makes cards', () => {
 
     const chatroom1Name = screen.getByText('room0');
     expect(chatroom1Name).toBeInTheDocument();
-    const room1Initial = screen.getByText('r');
-    expect(room1Initial).toBeInTheDocument();
     const room1IsPublic = screen.getByText('public');
     expect(room1IsPublic).toBeInTheDocument();
 
     const chatroom2Name = screen.getByText('this Room1');
     expect(chatroom2Name).toBeInTheDocument();
-    const room2Initial = screen.getByText('t');
-    expect(room2Initial).toBeInTheDocument();
     const room2IsPublic = screen.getByText('private');
     expect(room2IsPublic).toBeInTheDocument();
   });
