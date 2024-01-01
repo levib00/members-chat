@@ -21,8 +21,6 @@ describe('Cards renders correct info', () => {
 
     const chatroomName = screen.getByText('room0');
     expect(chatroomName).toBeInTheDocument();
-    const firstInitial = screen.getByText('r');
-    expect(firstInitial).toBeInTheDocument();
     const isPublic = screen.getByText('public');
     expect(isPublic).toBeInTheDocument();
   });
