@@ -8,7 +8,7 @@ import '@testing-library/jest-dom';
 import * as submitPost from '../../utility-functions/post-fetch';
 import Message from '../../components/message';
 
-describe('Chatroom gets messages then renders them', () => {
+describe('Messages renders', () => {
   const mockUser = {
     _id: '132456789011',
     firstName: 'firstName',
@@ -24,18 +24,21 @@ describe('Chatroom gets messages then renders them', () => {
     _id: '132456789011',
   };
 
-  test('renders messages in chatroom', () => {
+  test('renders message', () => {
     render(
       <MemoryRouter>
         <Message
           messageInfo={mockMessage}
           key={1}
           index={0}
-          toggle={ jest.fn() }
+          toggleEditing={ jest.fn() }
+          toggleDeleteModal={ jest.fn() }
           currentUser={ mockUser }
           sendMessage={ jest.fn() }
           handleNewWsMessage={ jest.fn() }
-          isEdits={false} />
+          isBeingEdited={false}
+          deleteConfirmation={true}
+        />
       </MemoryRouter>,
     );
     const Message1Username = screen.getAllByText('thisUser0');
@@ -59,17 +62,20 @@ describe('Chatroom gets messages then renders them', () => {
           messageInfo={mockMessage}
           key={1}
           index={0}
-          toggle={ jest.fn() }
+          toggleEditing={ jest.fn() }
+          toggleDeleteModal={ jest.fn() }
           currentUser={ mockUser }
           sendMessage={ jest.fn() }
           handleNewWsMessage={ jest.fn() }
-          isEdits={false} />
+          isBeingEdited={false}
+          deleteConfirmation={true} />
       </MemoryRouter>,
     );
-    const deleteButton = screen.getByText('Delete');
+
+    const confirmButton = screen.getByText('confirm');
 
     await act(async () => {
-      await userEvent.click(deleteButton);
+      await userEvent.click(confirmButton);
     });
 
     expect(submitPost.validateCreateDeleteMessage).toHaveBeenCalledTimes(1);
