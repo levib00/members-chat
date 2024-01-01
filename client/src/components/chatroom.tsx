@@ -3,7 +3,6 @@ import useSWR from 'swr';
 import { useNavigate, useParams } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 import useWebSocket from 'react-use-websocket';
-// import { TextDecoder, TextEncoder } from 'util';
 import { getFetcher } from '../utility-functions/fetcher';
 import { submitPost, validateLeaveChatroom, validateCreateDeleteMessage } from '../utility-functions/post-fetch';
 import Message from './message';
@@ -148,7 +147,7 @@ const Chatroom = (props: IChatroomProps) => {
         </div>
         {/* Mapping through messages and rendering each message */}
         <div className='message-list'>
-          {response?.messages.length > 0 ? response?.messages?.toReversed().map(
+          {response?.messages.length > 0 ? [...response.messages].reverse().map(
             (message: IMessageObject, index: number) => <Message
               key={(uuid())}
               index={index}
