@@ -191,7 +191,7 @@ function Message(props: IMessagesProps) {
                 />
                 </button> : <button onClick={toggleDeleteModal}>
                 <Icon path={deleteIcon}
-                  title='cancel'
+                  title='delete'
                   size={1}
                 />
                 </button>
