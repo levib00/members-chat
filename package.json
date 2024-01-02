@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "tsc": "tsc",
     "start": "node ./bin/www",
     "devstart": "tsc && nodemon ./bin/www",
     "serverstart": "DEBUG=members-chat:* npm run devstart",
