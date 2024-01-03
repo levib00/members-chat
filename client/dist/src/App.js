@@ -31,7 +31,7 @@ const react_router_dom_1 = require("react-router-dom");
 const nav_js_1 = __importDefault(require("./components/nav.js"));
 const home_js_1 = __importDefault(require("./components/home.js"));
 const sign_up_js_1 = __importDefault(require("./components/sign-up.js"));
-require("./styles/App.scss");
+require("../styles/App.css");
 const chat_list_js_1 = __importDefault(require("./components/chat-list.js"));
 const chatroom_js_1 = __importDefault(require("./components/chatroom.js"));
 const create_chat_js_1 = __importDefault(require("./components/create-chat.js"));
