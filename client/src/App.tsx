@@ -25,14 +25,14 @@ const App = () => {
       <BrowserRouter>
         <NavBar hasAuth={hasAuth} setHasAuth={setHasAuth} />
         <Routes>
-            <Route path='/' element={<Home hasAuth={hasAuth} />} />
-            <Route path='/chatrooms' element={<ChatroomList />} />
-            <Route path='/chatrooms/:chatroomId' element={<Chatroom setError={setError} />} />
-            <Route path='/chatrooms/new' element={<CreateChat isAnEdit={false} chatroom={null}/>} />
-            <Route path='/log-in' element={<LogIn hasAuth={hasAuth} setHasAuth={setHasAuth} />} />
-            <Route path='/sign-up' element={<SignUp hasAuth={hasAuth} /> } />
-            <Route path='/error' element={<Error error={error} />} />
-            <Route path='*' element={<Error error={error} />} />
+            <Route path='/members-chat' element={<Home hasAuth={hasAuth} />} />
+            <Route path='/members-chat/chatrooms' element={<ChatroomList />} />
+            <Route path='/members-chat/chatrooms/:chatroomId' element={<Chatroom setError={setError} />} />
+            <Route path='/members-chat/chatrooms/new' element={<CreateChat isAnEdit={false} chatroom={null}/>} />
+            <Route path='/members-chat/log-in' element={<LogIn hasAuth={hasAuth} setHasAuth={setHasAuth} />} />
+            <Route path='/members-chat/sign-up' element={<SignUp hasAuth={hasAuth} /> } />
+            <Route path='/members-chat/error' element={<Error error={error} />} />
+            <Route path='/members-chat/*' element={<Error error={error} />} />
         </Routes>
         <Footer />
       </BrowserRouter>

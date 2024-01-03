@@ -55,7 +55,7 @@ const CreateChat = (props) => {
             if (isAnEdit) {
                 try {
                     // Performing a PUT request to update an existing chatroom
-                    const response = yield fetch(`http://localhost:4832/chatrooms/edit/${chatroomId}`, {
+                    const response = yield fetch(`http://localhost:3000/chatrooms/edit/${chatroomId}`, {
                         method: 'PUT',
                         body: JSON.stringify({
                             roomName: chatNameInput,
@@ -87,7 +87,7 @@ const CreateChat = (props) => {
             }
             else {
                 // Handling submission for creating a new chatroom
-                (0, post_fetch_1.submitPost)('http://localhost:4832/chatrooms/new', {
+                (0, post_fetch_1.submitPost)('http://localhost:3000/chatrooms/new', {
                     roomName: chatNameInput,
                     password: passwordInput,
                     passwordConfirmation: confirmPasswordInput,

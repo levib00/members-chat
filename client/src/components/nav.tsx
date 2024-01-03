@@ -39,8 +39,8 @@ function NavBar(props: INavProps) {
         <>
           <div hidden={isMoreHidden}>
             <div className="hamburger-menu">
-              <Link className='menu-nav' to={'/log-in'}>Log in</Link>
-              <Link className='menu-nav' to={'/sign-up'}>Sign up</Link>
+              <Link className='menu-nav' to={'/members-chat/log-in'}>Log in</Link>
+              <Link className='menu-nav' to={'/members-chat/sign-up'}>Sign up</Link>
               <p>
                 Made by{' '}
                 <a className='github-link' href="https://github.com/levib00">levib00 on GitHub</a>
@@ -48,20 +48,20 @@ function NavBar(props: INavProps) {
             </div>
           </div>
           <div className='main-nav'>
-            <Link className='hero main-nav-button' to={'/'}>
+            <Link className='hero main-nav-button' to={'/members-chat/'}>
               <Icon path={home}
                 title='home'
                 size={1}
               />
               <div>Home</div></Link>
-            <Link className='side-nav main-nav-button' to={'/log-in'}>
+            <Link className='side-nav main-nav-button' to={'/members-chat/log-in'}>
               <Icon path={login}
                 title='login'
                 size={1}
               />
               <div>Log in</div>
             </Link>
-            <Link className='side-nav main-nav-button' to={'/sign-up'}>
+            <Link className='side-nav main-nav-button' to={'/members-chat/sign-up'}>
             <Icon path={signUp}
                 title='sign-up'
                 size={1}
@@ -90,14 +90,14 @@ function NavBar(props: INavProps) {
             </div>
           </div>
           <div className='main-nav'>
-            <Link className='hero main-nav-button' to={'/'}>
+            <Link className='hero main-nav-button' to={'/members-chat/'}>
               <Icon path={home}
                 title='home'
                 size={1}
               />
               <div>Home</div>
             </Link>
-            <Link className='main-nav-button' to={'/chatrooms'}>
+            <Link className='main-nav-button' to={'/members-chat/chatrooms'}>
             <Icon path={chatrooms}
               title='chatrooms'
               size={1}

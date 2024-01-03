@@ -41,12 +41,12 @@ const SignUp = (props) => {
     (0, react_1.useEffect)(() => {
         // Redirect if user is already logged in
         if (hasAuth) {
-            navigate('/');
+            navigate('/members-chat/');
         }
     });
     // Function to handle user registration (sign-up)
     const signUp = (e) => {
-        (0, post_fetch_1.submitPost)('http://localhost:4832/users/sign-up', {
+        (0, post_fetch_1.submitPost)('http://localhost:3000/users/sign-up', {
             firstName: firstNameInput,
             lastName: lastNameInput,
             username: usernameInput,
@@ -78,7 +78,7 @@ const SignUp = (props) => {
             validationError && (react_1.default.createElement("ul", null, Array.isArray(validationError)
                 ? validationError.map((error) => react_1.default.createElement("li", { key: (0, uuid_1.v4)() }, error))
                 : react_1.default.createElement("li", { key: (0, uuid_1.v4)() }, validationError)))),
-        react_1.default.createElement(react_router_dom_1.Link, { to: '/log-in' }, "Already have an account?")));
+        react_1.default.createElement(react_router_dom_1.Link, { to: '/members-chat/log-in' }, "Already have an account?")));
 };
 exports.default = SignUp;
 //# sourceMappingURL=sign-up.js.map

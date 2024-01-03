@@ -56,13 +56,13 @@ const ChatroomCard = (props) => {
             setIsJoining(true);
         }
         else if (hasUser) {
-            navigate(`/chatrooms/${id}`);
+            navigate(`/members-chat/chatrooms/${id}`);
         }
         else {
             // Sending a POST request to join the chatroom
-            const response = yield (0, post_fetch_1.submitPost)(`http://localhost:4832/users/join/${id}`, { password: passwordInput }, e, post_fetch_1.validateJoinChatroom, setValidationError, navigate, null, () => null);
+            const response = yield (0, post_fetch_1.submitPost)(`http://localhost:3000/users/join/${id}`, { password: passwordInput }, e, post_fetch_1.validateJoinChatroom, setValidationError, navigate, null, () => null);
             if (typeof (yield response) !== 'undefined') {
-                navigate(`/chatrooms/${id}`);
+                navigate(`/members-chat/chatrooms/${id}`);
             }
         }
     });

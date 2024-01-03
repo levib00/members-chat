@@ -26,7 +26,7 @@ const ChatroomList = () => {
   // Redirecting to login page if there's an error fetching user data or user is not signed in
   useEffect(() => {
     if (userError) {
-      navigate('/log-in');
+      navigate('/members-chat/log-in');
     }
   }, [userError]);
   return (
@@ -43,7 +43,7 @@ const ChatroomList = () => {
       </div>
 
       {/* Link to create a new chatroom page */}
-      <Link className='create-chat-button' to='/chatrooms/new'>Create a new chatroom</Link>
+      <Link className='create-chat-button' to='/members-chat/chatrooms/new'>Create a new chatroom</Link>
 
       {/* Mapping through chatrooms and rendering ChatroomCard component for each */}
       {(user && chatrooms)

@@ -22,7 +22,7 @@ const LogIn = (props: ILogInProps) => {
 
   useEffect(() => { // Redirect if the user is already logged in
     if (hasAuth) {
-      navigate('/'); // Redirect to the home page if already authenticated
+      navigate('/members-chat/'); // Redirect to the home page if already authenticated
     }
   });
 
@@ -71,7 +71,7 @@ const LogIn = (props: ILogInProps) => {
       </form>
 
       {/* Link to sign-up page */}
-      <Link to='/sign-up'>Don't have an account?</Link>
+      <Link to='/members-chat/sign-up'>Don't have an account?</Link>
     </div>
   );
 };

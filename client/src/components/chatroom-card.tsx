@@ -39,7 +39,7 @@ const ChatroomCard = (props: IChatroomCardProps) => {
     if ((!isJoining && !isPublic) && !hasUser) {
       setIsJoining(true);
     } else if (hasUser) {
-      navigate(`/chatrooms/${id}`);
+      navigate(`/members-chat/chatrooms/${id}`);
     } else {
       // Sending a POST request to join the chatroom
       const response = await submitPost(
@@ -53,7 +53,7 @@ const ChatroomCard = (props: IChatroomCardProps) => {
         () => null,
       );
       if (typeof await response !== 'undefined') {
-        navigate(`/chatrooms/${id}`);
+        navigate(`/members-chat/chatrooms/${id}`);
       }
     }
   };

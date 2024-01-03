@@ -24,7 +24,7 @@ const SignUp = (props: ISignUpProps) => {
   useEffect(() => {
     // Redirect if user is already logged in
     if (hasAuth) {
-      navigate('/');
+      navigate('/members-chat/');
     }
   });
 
@@ -86,7 +86,7 @@ const SignUp = (props: ISignUpProps) => {
         }
       </form>
       {/* Link to navigate to log-in page if user already has an account */}
-      <Link to='/log-in' >Already have an account?</Link>
+      <Link to='/members-chat/log-in' >Already have an account?</Link>
     </div>
   );
 };

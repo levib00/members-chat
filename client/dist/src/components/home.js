@@ -12,10 +12,10 @@ const Home = (props) => {
     return (react_1.default.createElement("div", { className: 'main home-page' }, !hasAuth ? ( // Display when the user doesn't have authentication
     react_1.default.createElement(react_1.default.Fragment, null,
         react_1.default.createElement("h2", null, "Join to start chatting now!"),
-        react_1.default.createElement(react_router_dom_1.Link, { to: '/sign-up' }, "Sign up now!"))) : ( // Display when the user has authentication
+        react_1.default.createElement(react_router_dom_1.Link, { to: '/members-chat/sign-up' }, "Sign up now!"))) : ( // Display when the user has authentication
     react_1.default.createElement(react_1.default.Fragment, null,
         react_1.default.createElement("h2", null, "Start chatting now!"),
-        react_1.default.createElement(react_router_dom_1.Link, { to: '/chatrooms' }, "See servers!")))));
+        react_1.default.createElement(react_router_dom_1.Link, { to: '/members-chat/chatrooms' }, "See servers!")))));
 };
 exports.default = Home;
 //# sourceMappingURL=home.js.map

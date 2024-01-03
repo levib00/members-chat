@@ -60,14 +60,14 @@ const Chatroom = (props) => {
         shouldReconnect: () => true,
     }); // TODO: set to wss in prod also change other links to https
     // Fetching user data using SWR (Stale-while-revalidate) pattern
-    const { data: user } = (0, swr_1.default)('http://localhost:4832/users/user', fetcher_1.getFetcher);
+    const { data: user } = (0, swr_1.default)('http://localhost:3000/users/user', fetcher_1.getFetcher);
     // Fetching chatroom messages data using SWR
-    const { data: response, error: commentError, mutate } = (0, swr_1.default)(`http://localhost:4832/messages/chatroom/${chatroomId}`, fetcher_1.getFetcher);
+    const { data: response, error: commentError, mutate } = (0, swr_1.default)(`http://localhost:3000/messages/chatroom/${chatroomId}`, fetcher_1.getFetcher);
     // Handling error states and redirection in case of errors
     (0, react_1.useEffect)(() => {
         setError(commentError);
         if (commentError) {
-            navigate('/error');
+            navigate('/members-chat/error');
         }
     }, [commentError]);
     const handleNewWsMessage = (message) => {
@@ -100,7 +100,7 @@ const Chatroom = (props) => {
             timestamp: date,
             content: messageInput,
         });
-        const jsonResponse = yield (0, post_fetch_1.submitPost)(`http://localhost:4832/messages/${chatroomId}`, { content: messageInput }, e, post_fetch_1.validateCreateDeleteMessage, setValidationError, navigate, null, sendMessage);
+        const jsonResponse = yield (0, post_fetch_1.submitPost)(`http://localhost:3000/messages/${chatroomId}`, { content: messageInput }, e, post_fetch_1.validateCreateDeleteMessage, setValidationError, navigate, null, sendMessage);
         if (yield jsonResponse.error) {
             handleNewWsMessage({});
             setValidationError(jsonResponse.error.map((error) => error));
@@ -111,7 +111,7 @@ const Chatroom = (props) => {
     });
     const leaveChat = (e) => {
         // Logic to handle leaving the chatroom
-        (0, post_fetch_1.submitPost)(`http://localhost:4832/users/leave/${chatroomId}`, { content: messageInput }, e, post_fetch_1.validateLeaveChatroom, setLeavingError, navigate, null, () => null);
+        (0, post_fetch_1.submitPost)(`http://localhost:3000/users/leave/${chatroomId}`, { content: messageInput }, e, post_fetch_1.validateLeaveChatroom, setLeavingError, navigate, null, () => null);
     };
     (0, react_1.useEffect)(() => {
         if (lastJsonMessage !== null) {

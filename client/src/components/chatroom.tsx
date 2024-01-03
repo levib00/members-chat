@@ -54,7 +54,7 @@ const Chatroom = (props: IChatroomProps) => {
   useEffect(() => {
     setError(commentError);
     if (commentError) {
-      navigate('/error');
+      navigate('/members-chat/error');
     }
   }, [commentError]);
 

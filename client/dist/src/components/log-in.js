@@ -37,13 +37,13 @@ const LogIn = (props) => {
     const navigate = (0, react_router_dom_1.useNavigate)(); // Accessing navigation function from React Router
     (0, react_1.useEffect)(() => {
         if (hasAuth) {
-            navigate('/'); // Redirect to the home page if already authenticated
+            navigate('/members-chat/'); // Redirect to the home page if already authenticated
         }
     });
     // Function to handle user login
     const logIn = (e) => {
         // Perform a POST request to log in the user
-        (0, post_fetch_1.submitPost)('http://localhost:4832/users/log-in', { username: usernameInput, password: passwordInput }, e, post_fetch_1.validateLogIn, setValidationError, navigate, setHasAuth, // Update the authentication status after successful login
+        (0, post_fetch_1.submitPost)('http://localhost:3000/users/log-in', { username: usernameInput, password: passwordInput }, e, post_fetch_1.validateLogIn, setValidationError, navigate, setHasAuth, // Update the authentication status after successful login
         () => null);
     };
     // JSX rendering for the LogIn component
@@ -59,7 +59,7 @@ const LogIn = (props) => {
             validationError && (react_1.default.createElement("ul", null, Array.isArray(validationError)
                 ? validationError.map((error) => react_1.default.createElement("li", { key: (0, uuid_1.v4)() }, error))
                 : react_1.default.createElement("li", { key: (0, uuid_1.v4)() }, validationError)))),
-        react_1.default.createElement(react_router_dom_1.Link, { to: '/sign-up' }, "Don't have an account?")));
+        react_1.default.createElement(react_router_dom_1.Link, { to: '/members-chat/sign-up' }, "Don't have an account?")));
 };
 exports.default = LogIn;
 //# sourceMappingURL=log-in.js.map

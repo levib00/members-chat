@@ -59,7 +59,7 @@ function Message(props) {
         handleNewWsMessage({ _id: messageInfo._id });
         try {
             // Perform a DELETE request to delete the message
-            const response = yield fetch(`http://localhost:4832/messages/delete/${id}`, {
+            const response = yield fetch(`http://localhost:3000/messages/delete/${id}`, {
                 method: 'DELETE',
                 credentials: 'include',
                 // @ts-ignore
@@ -96,7 +96,7 @@ function Message(props) {
         });
         try {
             // Perform a PUT request to edit the message
-            const response = yield fetch(`http://localhost:4832/messages/edit/${id}`, {
+            const response = yield fetch(`http://localhost:3000/messages/edit/${id}`, {
                 method: 'PUT',
                 body: JSON.stringify({ content: messageInput }),
                 credentials: 'include',

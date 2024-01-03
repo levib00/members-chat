@@ -14,7 +14,7 @@ exports.submitPost = exports.validateMakeAdmin = exports.validateLeaveChatroom =
 const validateCreateChat = (response, navigate, setValidationError) => __awaiter(void 0, void 0, void 0, function* () {
     // Check the response status
     if (response.status === 200) {
-        navigate('/chatrooms'); // Redirect if successful
+        navigate('/members-chat/chatrooms'); // Redirect if successful
         return response.status;
     }
     // Handle errors by setting validation errors
@@ -56,7 +56,7 @@ const validateJoinChatroom = (response, navigate, setValidationError) => __await
     const jsonResponse = yield response.json();
     if (response.status === 200) {
         localStorage.setItem('jwt', yield jsonResponse.token);
-        navigate(`/chatrooms/${jsonResponse.chatroomId}`); // Redirect to chat room if successful
+        navigate(`/members-chat/chatrooms/${jsonResponse.chatroomId}`); // Redirect to chat room if successful
         return response.status;
     }
     if (jsonResponse.error) {
@@ -69,7 +69,7 @@ exports.validateJoinChatroom = validateJoinChatroom;
 // Function for handling sign-up validation
 const validateSignUp = (response, navigate, setValidationError) => __awaiter(void 0, void 0, void 0, function* () {
     if (response.status === 200) {
-        navigate('/'); // Redirect to home page if successful
+        navigate('/members-chat/'); // Redirect to home page if successful
         return response.status;
     }
     if (response.status === 401) {
@@ -88,7 +88,7 @@ const validateLogIn = (response, navigate, setValidationError, setHasAuth) => __
         const tokenObject = yield response.json();
         localStorage.setItem('jwt', yield tokenObject.token);
         setHasAuth(true); // Set authentication to true on successful login
-        navigate('/'); // Redirect to home page
+        navigate('/members-chat/'); // Redirect to home page
         return response.status;
     }
     if (response.status === 401) {
@@ -105,7 +105,7 @@ const validateLeaveChatroom = (response, navigate, setValidationError) => __awai
     if (response.status === 200) {
         const tokenObject = yield response.json();
         localStorage.setItem('jwt', yield tokenObject.token);
-        navigate('/chatrooms'); // Redirect to chat rooms on successful leaving
+        navigate('/members-chat/chatrooms'); // Redirect to chat rooms on successful leaving
         return response;
     }
     const errorResponse = yield response.json();

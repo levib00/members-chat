@@ -19,14 +19,14 @@ const Home = (props: IHomeProps) => {
           <h2>
             Join to start chatting now!
           </h2>
-          <Link to='/sign-up'>Sign up now!</Link>
+          <Link to='/members-chat/sign-up'>Sign up now!</Link>
         </>
       ) : ( // Display when the user has authentication
         <>
           <h2>
             Start chatting now!
           </h2>
-          <Link to='/chatrooms'>See servers!</Link>
+          <Link to='/members-chat/chatrooms'>See servers!</Link>
         </>
       )}
     </div>
