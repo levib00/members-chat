@@ -45,14 +45,14 @@ const App = () => {
         react_1.default.createElement(react_router_dom_1.BrowserRouter, null,
             react_1.default.createElement(nav_js_1.default, { hasAuth: hasAuth, setHasAuth: setHasAuth }),
             react_1.default.createElement(react_router_dom_1.Routes, null,
-                react_1.default.createElement(react_router_dom_1.Route, { path: '/members-chat', element: react_1.default.createElement(home_js_1.default, { hasAuth: hasAuth }) }),
-                react_1.default.createElement(react_router_dom_1.Route, { path: '/members-chat/chatrooms', element: react_1.default.createElement(chat_list_js_1.default, null) }),
-                react_1.default.createElement(react_router_dom_1.Route, { path: '/members-chat/chatrooms/:chatroomId', element: react_1.default.createElement(chatroom_js_1.default, { setError: setError }) }),
-                react_1.default.createElement(react_router_dom_1.Route, { path: '/members-chat/chatrooms/new', element: react_1.default.createElement(create_chat_js_1.default, { isAnEdit: false, chatroom: null }) }),
-                react_1.default.createElement(react_router_dom_1.Route, { path: '/members-chat/log-in', element: react_1.default.createElement(log_in_js_1.default, { hasAuth: hasAuth, setHasAuth: setHasAuth }) }),
-                react_1.default.createElement(react_router_dom_1.Route, { path: '/members-chat/sign-up', element: react_1.default.createElement(sign_up_js_1.default, { hasAuth: hasAuth }) }),
-                react_1.default.createElement(react_router_dom_1.Route, { path: '/members-chat/error', element: react_1.default.createElement(error_js_1.default, { error: error }) }),
-                react_1.default.createElement(react_router_dom_1.Route, { path: '/members-chat/*', element: react_1.default.createElement(error_js_1.default, { error: error }) })),
+                react_1.default.createElement(react_router_dom_1.Route, { path: '/', element: react_1.default.createElement(home_js_1.default, { hasAuth: hasAuth }) }),
+                react_1.default.createElement(react_router_dom_1.Route, { path: '/chatrooms', element: react_1.default.createElement(chat_list_js_1.default, null) }),
+                react_1.default.createElement(react_router_dom_1.Route, { path: '/chatrooms/:chatroomId', element: react_1.default.createElement(chatroom_js_1.default, { setError: setError }) }),
+                react_1.default.createElement(react_router_dom_1.Route, { path: '/chatrooms/new', element: react_1.default.createElement(create_chat_js_1.default, { isAnEdit: false, chatroom: null }) }),
+                react_1.default.createElement(react_router_dom_1.Route, { path: '/log-in', element: react_1.default.createElement(log_in_js_1.default, { hasAuth: hasAuth, setHasAuth: setHasAuth }) }),
+                react_1.default.createElement(react_router_dom_1.Route, { path: '/sign-up', element: react_1.default.createElement(sign_up_js_1.default, { hasAuth: hasAuth }) }),
+                react_1.default.createElement(react_router_dom_1.Route, { path: '/error', element: react_1.default.createElement(error_js_1.default, { error: error }) }),
+                react_1.default.createElement(react_router_dom_1.Route, { path: '/*', element: react_1.default.createElement(error_js_1.default, { error: error }) })),
             react_1.default.createElement(footer_js_1.default, null))));
 };
 exports.default = App;
