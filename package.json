@@ -5,7 +5,7 @@
   "homepage": "https://levib00.github.io/members-chat/",
   "scripts": {
     "tsc": "tsc",
-    "deploy" : "gh-pages -d ./client/dist",
+    "deploy": "gh-pages-clean gh-pages -d build",
     "start": "node ./bin/www",
     "devstart": "tsc && nodemon ./bin/www",
     "serverstart": "DEBUG=members-chat:* npm run devstart",
