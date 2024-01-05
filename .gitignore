@@ -11,6 +11,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 dist/
+client/dist/
 node_modules
 server-dist/
 *.local
