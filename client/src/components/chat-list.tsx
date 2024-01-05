@@ -18,10 +18,10 @@ const ChatroomList = () => {
   const navigate = useNavigate(); // Accessing the navigation function from React Router
 
   // Fetching user data using SWR
-  const { data: user, error: userError } = useSWR('http://localhost:3000/users/user', getFetcher);
+  const { data: user, error: userError } = useSWR('https://levib00-chatroom.adaptable.app/users/user', getFetcher);
 
   // Fetching chatroom data using SWR
-  const { data: chatrooms } = useSWR('http://localhost:3000/chatrooms/', getFetcher);
+  const { data: chatrooms } = useSWR('https://levib00-chatroom.adaptable.app/chatrooms/', getFetcher);
 
   // Redirecting to login page if there's an error fetching user data or user is not signed in
   useEffect(() => {

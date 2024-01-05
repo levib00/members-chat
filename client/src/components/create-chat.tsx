@@ -35,7 +35,7 @@ const CreateChat = (props: ICreateChatProps) => {
       if (isAnEdit) {
         try {
           // Performing a PUT request to update an existing chatroom
-          const response = await fetch(`http://localhost:3000/chatrooms/edit/${chatroomId}`, {
+          const response = await fetch(`https://levib00-chatroom.adaptable.app/chatrooms/edit/${chatroomId}`, {
             method: 'PUT',
             body: JSON.stringify({
               roomName: chatNameInput,
@@ -48,7 +48,7 @@ const CreateChat = (props: ICreateChatProps) => {
             headers: {
               Accept: 'application/json',
               'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': 'http://localhost:5173',
+              'Access-Control-Allow-Origin': 'https://levib00.github.io',
               Authorization: (() => {
                 const token = localStorage.getItem('jwt');
                 if (token) {
@@ -66,7 +66,7 @@ const CreateChat = (props: ICreateChatProps) => {
       } else {
         // Handling submission for creating a new chatroom
         submitPost(
-          'http://localhost:3000/chatrooms/new',
+          'https://levib00-chatroom.adaptable.app/chatrooms/new',
           {
             roomName: chatNameInput,
             password: passwordInput,

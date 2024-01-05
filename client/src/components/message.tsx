@@ -76,14 +76,14 @@ function Message(props: IMessagesProps) {
     handleNewWsMessage({ _id: messageInfo._id });
     try {
       // Perform a DELETE request to delete the message
-      const response = await fetch(`http://localhost:3000/messages/delete/${id}`, {
+      const response = await fetch(`https://levib00-chatroom.adaptable.app/messages/delete/${id}`, {
         method: 'DELETE',
         credentials: 'include',
         // @ts-ignore
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': 'http://localhost:5173',
+          'Access-Control-Allow-Origin': 'https://levib00.github.io',
           Authorization: (() => {
             const token = localStorage.getItem('jwt');
             if (token) {
@@ -113,7 +113,7 @@ function Message(props: IMessagesProps) {
     });
     try {
       // Perform a PUT request to edit the message
-      const response = await fetch(`http://localhost:3000/messages/edit/${id}`, {
+      const response = await fetch(`https://levib00-chatroom.adaptable.app/messages/edit/${id}`, {
         method: 'PUT',
         body: JSON.stringify({ content: messageInput }),
         credentials: 'include',
@@ -121,7 +121,7 @@ function Message(props: IMessagesProps) {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': 'http://localhost:5173',
+          'Access-Control-Allow-Origin': 'https://levib00.github.io',
           Authorization: (() => {
             const token = localStorage.getItem('jwt');
             if (token) {

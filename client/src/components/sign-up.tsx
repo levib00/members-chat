@@ -31,7 +31,7 @@ const SignUp = (props: ISignUpProps) => {
   // Function to handle user registration (sign-up)
   const signUp = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     submitPost(
-      'http://localhost:3000/users/sign-up',
+      'https://levib00-chatroom.adaptable.app/users/sign-up',
       {
         firstName: firstNameInput,
         lastName: lastNameInput,

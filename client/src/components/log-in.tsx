@@ -30,7 +30,7 @@ const LogIn = (props: ILogInProps) => {
   const logIn = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     // Perform a POST request to log in the user
     submitPost(
-      'http://localhost:3000/users/log-in',
+      'https://levib00-chatroom.adaptable.app/users/log-in',
       { username: usernameInput, password: passwordInput },
       e,
       validateLogIn,

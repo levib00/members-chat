@@ -43,7 +43,7 @@ const ChatroomCard = (props: IChatroomCardProps) => {
     } else {
       // Sending a POST request to join the chatroom
       const response = await submitPost(
-        `http://localhost:3000/users/join/${id}`,
+        `https://levib00-chatroom.adaptable.app/users/join/${id}`,
         { password: passwordInput },
         e,
         validateJoinChatroom,
