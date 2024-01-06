@@ -119,7 +119,7 @@ export const validateLogIn = async (
     return response.status;
   }
   const errorResponse = await response.json();
-  setValidationError(errorResponse.error); // Set validation error from response
+  // setValidationError(errorResponse.error); // Set validation error from response
   return errorResponse;
 };
 
@@ -198,7 +198,8 @@ export const submitPost = async (
       sendMessage,
     );
   } catch (error: any) {
-    setValidationError(error); // Set validation error in case of an error
+    console.error(error);
+    setValidationError('Something went wrong.'); // Set error in case of an error
     return error;
   }
 };
