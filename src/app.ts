@@ -21,7 +21,6 @@ const mongoDb = process.env.DB_DRIVER_LINK;
 mongoose.connect(mongoDb, { useUnifiedTopology: true, useNewUrlParser: true });
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'mongo connection error'));
-console.log('env', process.env);
 
 passport.use(
   new LocalStrategy(async (
@@ -64,6 +63,18 @@ passport.deserializeUser(async (id: string, done: (arg0: unknown, arg1?: undefin
 
 const app: any = express();
 
+interface ICorsOptions {
+  origin: any,
+  credentials: boolean,
+}
+
+const corsOptions: ICorsOptions = {
+  origin(origin: any, callback: any) {
+    callback(null, true);
+  },
+  credentials: true,
+};
+
 app.use(logger('dev'));
 app.use(express.json());
 
@@ -73,7 +84,7 @@ app.use(passport.session());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors());
+app.use(cors(corsOptions));
 
 app.use('/api/users', usersRouter);
 app.use('/api/messages', messagesRouter);
