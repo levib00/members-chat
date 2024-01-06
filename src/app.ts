@@ -62,24 +62,6 @@ passport.deserializeUser(async (id: string, done: (arg0: unknown, arg1?: undefin
   }
 });
 
-const whitelist: Array<string> = ['https://levib00.github.io'];
-
-interface ICorsOptions {
-  origin: any,
-  credentials: boolean,
-}
-
-const corsOptions: ICorsOptions = {
-  origin(origin: any, callback: any) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-};
-
 const app: any = express();
 
 app.use(logger('dev'));
@@ -91,11 +73,11 @@ app.use(passport.session());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors(corsOptions));
+app.use(cors());
 
-app.use('/users', usersRouter);
-app.use('/messages', messagesRouter);
-app.use('/chatrooms', chatroomsRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/messages', messagesRouter);
+app.use('/api/chatrooms', chatroomsRouter);
 
 app.use((req: { user: any; }, res: { locals: { currentUser: any; }; }, next: () => void) => {
   res.locals.currentUser = req.user;
