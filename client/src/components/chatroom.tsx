@@ -45,10 +45,10 @@ const Chatroom = (props: IChatroomProps) => {
   }); // TODO: set to wss in prod also change other links to https
 
   // Fetching user data using SWR (Stale-while-revalidate) pattern
-  const { data: user } = useSWR('https://levib00-chatroom.adaptable.app/users/user', getFetcher);
+  const { data: user } = useSWR('https://levib00-chatroom.adaptable.app/api/users/user', getFetcher);
 
   // Fetching chatroom messages data using SWR
-  const { data: response, error: commentError, mutate } = useSWR(`https://levib00-chatroom.adaptable.app/messages/chatroom/${chatroomId}`, getFetcher);
+  const { data: response, error: commentError, mutate } = useSWR(`https://levib00-chatroom.adaptable.app/api/messages/chatroom/${chatroomId}`, getFetcher);
 
   // Handling error states and redirection in case of errors
   useEffect(() => {
@@ -89,7 +89,7 @@ const Chatroom = (props: IChatroomProps) => {
       content: messageInput,
     });
     const jsonResponse = await submitPost(
-      `https://levib00-chatroom.adaptable.app/messages/${chatroomId}`,
+      `https://levib00-chatroom.adaptable.app/api/messages/${chatroomId}`,
       { content: messageInput },
       e,
       validateCreateDeleteMessage,
@@ -110,7 +110,7 @@ const Chatroom = (props: IChatroomProps) => {
   const leaveChat = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     // Logic to handle leaving the chatroom
     submitPost(
-      `https://levib00-chatroom.adaptable.app/users/leave/${chatroomId}`,
+      `https://levib00-chatroom.adaptable.app/api/users/leave/${chatroomId}`,
       { content: messageInput },
       e,
       validateLeaveChatroom,

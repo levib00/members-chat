@@ -35,7 +35,7 @@ const CreateChat = (props: ICreateChatProps) => {
       if (isAnEdit) {
         try {
           // Performing a PUT request to update an existing chatroom
-          const response = await fetch(`https://levib00-chatroom.adaptable.app/chatrooms/edit/${chatroomId}`, {
+          const response = await fetch(`https://levib00-chatroom.adaptable.app/api/chatrooms/edit/${chatroomId}`, {
             method: 'PUT',
             body: JSON.stringify({
               roomName: chatNameInput,
@@ -66,7 +66,7 @@ const CreateChat = (props: ICreateChatProps) => {
       } else {
         // Handling submission for creating a new chatroom
         submitPost(
-          'https://levib00-chatroom.adaptable.app/chatrooms/new',
+          'https://levib00-chatroom.adaptable.app/api/chatrooms/new',
           {
             roomName: chatNameInput,
             password: passwordInput,
