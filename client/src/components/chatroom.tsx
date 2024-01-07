@@ -39,10 +39,10 @@ const Chatroom = (props: IChatroomProps) => {
   const [deleteConfirmation, setDeleteConfirmation] = useState<null | number>(null);
 
   const [jwt] = useState(localStorage.getItem('jwt'));
-  const { sendMessage, lastJsonMessage } = useWebSocket(`ws://localhost:3000/ws?token=${jwt}&chatroomId=${chatroomId}`, {
+  const { sendMessage, lastJsonMessage } = useWebSocket(`wss://levib00-chatroom.adaptable.app/ws?token=${jwt}&chatroomId=${chatroomId}`, {
     // Will attempt to reconnect on all close events, such as server shutting down
     shouldReconnect: () => true,
-  }); // TODO: set to wss in prod also change other links to https
+  });
 
   // Fetching user data using SWR (Stale-while-revalidate) pattern
   const { data: user } = useSWR('https://levib00-chatroom.adaptable.app/api/users/user', getFetcher);
