@@ -1,8 +1,7 @@
 // @ts-nocheck
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import * as postFetch from '../../utility-functions/post-fetch';
 import CreateChat from '../../components/create-chat';
@@ -40,6 +39,6 @@ describe('Create chat', () => {
     expect(chatNameInput.value).toBe('name test');
     expect(passwordInput.value).toBe('1234');
     expect(passwordConfirmInput.value).toBe('1234');
-    expect(submitPost).lastCalledWith('http://localhost:3000/chatrooms/new', expect.anything(), expect.anything(), expect.anything(), expect.anything(), expect.anything(), null, expect.anything());
+    expect(submitPost).lastCalledWith('https://levib00-chatroom.adaptable.app/api/chatrooms/new', expect.anything(), expect.anything(), expect.anything(), expect.anything(), expect.anything(), null, expect.anything());
   });
 });

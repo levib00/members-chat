@@ -1,10 +1,11 @@
 // @ts-nocheck
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import {
+  render, screen, waitFor,
+} from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 import * as SWR from 'swr';
-import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import * as submitPost from '../../utility-functions/post-fetch';
 import Chatroom from '../../components/chatroom';
@@ -77,8 +78,7 @@ describe('Chatroom gets messages then renders them', () => {
       return null;
     });
 
-  test('renders messages in chatroom', () => {
-    // TODO: fix act error.
+  test('renders messages in chatroom', async () => {
     render(
       <MemoryRouter>
         <Chatroom setError={setErrorMock} />
@@ -98,12 +98,15 @@ describe('Chatroom gets messages then renders them', () => {
     expect(room2Initial).toBeInTheDocument();
     const room2IsPublic = screen.getByText('This is message 1');
     expect(room2IsPublic).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText('This is message 0')).toBeInTheDocument();
+    });
   });
 
   test('message is sent', async () => {
     submitPost.submitPost = jest.fn().mockImplementationOnce(() => 'test');
 
-    // TODO: fix act error.
     render(
       <MemoryRouter>
         <Chatroom setError={setErrorMock} />
@@ -114,10 +117,8 @@ describe('Chatroom gets messages then renders them', () => {
 
     const submitButton = screen.getByText('Send');
 
-    await act(async () => {
-      await userEvent.type(messageInput, 'message');
-      await userEvent.click(submitButton);
-    });
+    await userEvent.type(messageInput, 'message');
+    await userEvent.click(submitButton);
 
     expect(submitPost.submitPost).toHaveBeenCalledTimes(1);
   });
@@ -125,7 +126,6 @@ describe('Chatroom gets messages then renders them', () => {
   test('leave chat request is sent leave chat.', async () => {
     submitPost.submitPost = jest.fn().mockImplementationOnce(() => 'test');
 
-    // TODO: fix act error.
     render(
       <MemoryRouter>
         <Chatroom setError={setErrorMock} />
@@ -134,17 +134,13 @@ describe('Chatroom gets messages then renders them', () => {
 
     const leaveButton = screen.getByText('Leave chat');
 
-    await act(async () => {
-      await userEvent.click(leaveButton);
-    });
-
+    await userEvent.click(leaveButton);
     expect(submitPost.submitPost).toHaveBeenCalledTimes(1);
   });
 
   test('edit modal works.', async () => {
     submitPost.submitPost = jest.fn().mockImplementationOnce(() => 'test');
 
-    // TODO: fix act error.
     render(
       <MemoryRouter>
         <Chatroom setError={setErrorMock} />
@@ -153,9 +149,7 @@ describe('Chatroom gets messages then renders them', () => {
 
     const submitButton = screen.getByText('Edit chatroom');
 
-    await act(async () => {
-      await userEvent.click(submitButton);
-    });
+    await userEvent.click(submitButton);
 
     const cancelButton = screen.getByText('cancel');
 
@@ -165,7 +159,6 @@ describe('Chatroom gets messages then renders them', () => {
   test('validation errors show.', async () => {
     submitPost.submitPost = jest.fn().mockImplementationOnce(() => ({ error: ['error'] }));
 
-    // TODO: fix act error.
     render(
       <MemoryRouter>
         <Chatroom setError={setErrorMock} />
@@ -175,10 +168,8 @@ describe('Chatroom gets messages then renders them', () => {
     const messageInput = screen.getByRole('textbox');
     const submitButton = screen.getByText('Send');
 
-    await act(async () => {
-      await userEvent.type(messageInput, '300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, ');
-      await userEvent.click(submitButton);
-    });
+    await userEvent.type(messageInput, '300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, 300+ characters, ');
+    await userEvent.click(submitButton);
 
     expect(submitPost.submitPost).toHaveBeenCalledTimes(1);
     const errorMessage = screen.getByText('error');
