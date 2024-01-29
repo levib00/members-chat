@@ -28,7 +28,7 @@ describe('Post fetch Create chat.', () => {
       sendMessage,
     );
 
-    expect(navigate).toBeCalledWith('/chatrooms');
+    expect(navigate).toBeCalledWith('/members-chat/chatrooms');
   });
 
   test('Adds errors sent from the server.', async () => {
@@ -83,7 +83,7 @@ describe('Post fetch sign Up', () => {
       sendMessage,
     );
 
-    expect(navigate).toBeCalledWith('/');
+    expect(navigate).toBeCalledWith('/members-chat/');
   });
 
   test('Sets wrong username or password message on 401 error. ', async () => {
